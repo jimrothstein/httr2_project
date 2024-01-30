@@ -1,0 +1,109 @@
+#   file <- "022_curl_github_PAT.txt#"
+## ===========================================
+# ===========================================
+#   GITHUB API:   Starting with RESTFUL API
+# ===========================================
+#
+# REFERENCE:
+# https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api
+#
+#
+# ===========================================
+# WORKS
+#   curl https://api.github.com/zen
+# ===============================
+
+#
+## ===========================================
+# WORKS
+# GET /users/defunkt
+#   curl https://api.github.com/users/defunkt
+#
+#
+# 
+#   TO include HEADERS
+# curl -i https://api.github.com/users/defunkt
+#
+#   TO see HEADERS Only:
+# curl --head https://api.github.com/users/defunkt
+#
+#
+# ======================
+#       AUTHENTICATION
+# ======================
+#
+# STEP 1 get token, using R
+# In shell:
+#       token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+#       echo $var
+# =======================================================
+# STEP 2:
+#   curl --config 022_curl_github.txt 
+url="https://api.github.com/users/user"
+-i 
+-s
+-H "Accept: application/vnd.github.v3+json"
+-D headers.txt
+-v
+
+# -u   SEE BELOW
+
+# ============================
+##  x-ratelimit-limit: 60, for BOTH
+#
+# -u "jimrothstein:${token}"
+# -u "jimrothstein:ghp_SNIP"
+# ==============================================================
+
+# ======================================================
+# As of 24FEB 2022, to obtain 5000
+# MUST USE:  -u jimrothstein:${token} on command line.
+# DOES not work as item in config file
+# ======================================================
+#
+#
+#   Asks for username (anything seems ok)
+# curl -i -u your_username https://api.github.com/users/octocat
+#
+# ============================================================================
+# WORKS
+#  (updated 20FEB22)
+#   To retrieve my Github_PAT (stored in ~/.Renviron) and put into zsh shell
+#   export token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+#   echo $token
+#
+#   # note `x-ratelimit-limit: 5000`
+#  curl -si -u jimrothstein:$token https://api.github.com/users/octocat
+#  
+# ============================================================================
+#
+#
+#   To get info about me (if authenticated)
+# curl -i -u jimrothstein:$token https://api.github.com/users/user
+# curl -i -u jimrothstein:$token https://api.github.com/users/jimrothstein
+# =========================================================================
+#
+# WORKS!
+#endpoint=/status
+#curl ${base}${endpoint}
+#
+# exit
+
+
+# ===============================================================================
+#  `Contributors` is public
+#  But `collobrators` is private
+# ===============================================================================
+#   
+# curl -s https://api.github.com/repos/google/go-github/contributors | head -40
+# curl -s https://api.github.com/repos/jimrothstein/try_things_here/contributors | head -40 
+#
+# ===============================================================================
+# `Colloboraters` (project manger) is privid and requires authorization.
+# FAILS
+# curl -s  https://api.github.com/repos/jimrothstein/try_things_here/collaborators 
+#
+#
+#  WORKS   
+## curl -s -u jimrothstein:$token https://api.github.com/repos/jimrothstein/try_things_here/collaborators 
+# ===============================================================================

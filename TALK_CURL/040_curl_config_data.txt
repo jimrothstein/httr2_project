@@ -1,0 +1,31 @@
+
+#   file <- "040_curl_config_data.txt#   not working"
+
+# ===========================================
+#   PURPOSE:    various ways to send --data
+#   USAGE:  at CLI (not as script)  
+#
+# ===========================================
+curl -d -s -o /dev/null '{ "name": "Darth" }' http://example.com
+
+
+#   NOT WOKRING
+
+#
+curl -H 'Content-Type: application/json' \ 
+-d '{ "name" : "jim" }' -D headers.txt \
+https://httpbin.org 
+
+#
+curl -X POST -H "Content-Type: application/json" -d @- "$HOST" <<CURL_DATA
+{ "data": "$DATA" }
+CURL_DATA
+
+
+# works
+ curl -d "name=jim" https://example.com
+curl -d "name=curl" -d "tool=cmdline" https://example.com
+
+
+# capture response header in headers.txt
+curl -D headers.txt curl.se

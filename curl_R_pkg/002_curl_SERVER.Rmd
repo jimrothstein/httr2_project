@@ -1,0 +1,162 @@
+---
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), ' %d %B %Y'))`"
+output:   
+  html_document:  
+        code_folding: show
+        toc: true 
+        toc_depth: 4
+        toc_float: true
+        mathjax: default
+  pdf_document:   
+    latex_engine: lualatex  
+    toc: true
+    toc_depth:  4   
+    keep_tex:  true
+    keep_md:   true
+  header-includes:  
+    -  \usepackage{helvet}  
+    -  \renewcommand{\familydefault}{\sfdefault}  
+    -  \usepackage{ulem}
+fontsize: 10pt   
+geometry: margin=0.4in,top=0.25in   
+TAGS:  skeleton
+---
+~/code/MASTER_INDEX.md
+
+PURPOSE:    curl_echo to set up server
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      tidy = "styler",
+                      error = TRUE,
+                      collapse = T   ) # T easier to read
+```
+
+```{r library 		}
+library(jimTools)
+library(curl)
+``` 
+```{r echo}
+##  GET
+
+h <- new_handle(url = 'https://httpbin.org')
+
+curl_echo(handle=h, port = 9359, progress = interactive(), file = NULL)
+
+## GET
+curl_echo(h)
+
+##  POST
+h <- new_handle(url = 'https://httpbin.org/post')
+handle_setform(h, foo = "blabla", bar = charToRaw("test"),
+  myfile = form_file(system.file("DESCRIPTION"), "text/description"))
+
+curl_echo(h)
+```
+
+####   get a connection
+```{r, curl}
+con  <- curl(url = "http://httpbin.org") 
+readLines(con) #HTML
+
+
+
+curl(url = "http://httpbin.org/get") 
+
+x  <- curl(url = "http://httpbin.org/get", open = "", handle = new_handle())
+
+##  View
+readLines(x)
+```
+
+#### curl options
+```{r curl_options}
+library(data.table)
+dt  <- data.table()
+opts <- curl_options() 
+
+names  <- names(opts)
+
+names(opts)  <- NULL
+values  <- opts 
+
+dt  <- data.table(name = names, value = values)  
+dt
+
+```
+
+####    Use handle to set options, headers, body
+```{r handle}
+h  <- new_handle()
+h
+str(h)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- new way to set CHUNK OPTIONS -->
+```{r cars-plot, include=F,  eval=F}
+#| echo = FALSE,
+#| message = FALSE,
+#| fig.width = 6, 
+#| fig.height = 6,
+#| fig.path = "figures/",
+#| fig.caption = "This is a long caption that fits better inside of a code chunk",
+#| fig.alt = "This is a long description that conveys the meaning of the visual."
+
+library(ggplot2)
+```
+
+
+```{r render, eval=FALSE, include=FALSE 	} 
+output_dir  <- Sys.getenv("OUTPUT_DIR")
+output_dir
+
+{
+# get file
+file <- "/home/jim/.config/nvim/templates/skeleton.Rmd"
+file  <- normalizePath(file)
+file
+
+
+## Ref only
+    # the_dir  <- dirname(file)
+    # file  <- basename(file)
+    # file  <- file.path(the_dir, file)
+
+}
+
+rmarkdown::render(file,
+#                  output_format="html_document",
+                    output_format="pdf_document",
+                    intermediates_dir='./tmp',
+                    clean = F,              # leave tmp files
+                    output_dir=output_dir
+                  )
+```
+
+#### html ONLY (fonts)
+```{r, results = 'asis',echo = F}
+htmltools::h3("Test big font")
+htmltools::h4('Test medium font')
+htmltools::h5('Test smaller font')
+```
+`r htmltools::h3("Outside chunck")`

@@ -1,0 +1,23 @@
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), ' %d %B %Y'))`"
+output:   
+  html_document:  
+        code_folding: show
+        toc: true 
+        toc_depth: 4
+        toc_float: true
+        mathjax: default
+  pdf_document:   
+    latex_engine: lualatex  
+    toc: true
+    toc_depth:  4   
+    keep_tex:  true
+    keep_md:   true
+  header-includes:  
+    -  \usepackage{helvet}  
+    -  \renewcommand{\familydefault}{\sfdefault}  
+    -  \usepackage{ulem}
+fontsize: 10pt   
+geometry: margin=0.4in,top=0.25in   
+TAGS:  skeleton

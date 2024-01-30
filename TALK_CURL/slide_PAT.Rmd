@@ -1,0 +1,52 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+#output:  
+#    pdf_document:
+#      latex_engine:  lualatex  
+#output:  html_document
+output:
+    beamer_presentation:
+        latex_engine: lualatex
+fontsize:  8pt
+---
+
+
+###  Github  Personal Access Token (PAT)
+-   Replacement for password
+-   Scope:  controls what resources , time limits
+
+### To get token (PAT)
+-   get token: https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api
+
+-   (Walk through)    Github token (Personal Access Token) 
+-   settings | developer settings (bottom left)
+-   SCOPE
+
+### Next:  where to savely store it?
+   store the token ~/.Renviron
+   token, works
+```
+GITHUB_PAT=abc.....
+```
+
+### To retrieve and use the token
+```{zsh, echo=T}
+export token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+# echo $token
+
+curl -si -u jimrothstein:$token https://api.github.com/users/jimrothstein |
+head
+```
+
+```{zsh, echo=T}
+export token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+echo $token
+curl -Hs "Authorization: token $token" https://api.github.com/users/codertocat -I
+```
+
+
+
+
+

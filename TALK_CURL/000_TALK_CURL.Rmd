@@ -1,0 +1,174 @@
+---
+title: "R and Restful APIs "
+author: jim rothstein
+date: 
+#output:  
+#    pdf_document:
+#      latex_engine:  lualatex  
+#output:  html_document
+output:
+    pdf_document:  
+        latex_engine: lualatex
+        toc:  true
+        toc_depth: 4
+        keep_tex:  true
+        number_sections: true
+    beamer_presentation:
+        latex_engine: lualatex
+        toc:  true
+#        incremental:  true
+        keep_tex:  true
+        highlight:  espresso  
+        slide_level:  1
+        includes:
+          in_header:  preamble.tex
+fontsize:  10pt
+---
+
+<!-- 
+PURPOSE:   Create a .pdf that is BEAMER
+BEAMER is tex file (?) so latex can be incorporated.
+CREATE:     rmarkdown::render("001_first.Rmd)
+VIEW:       :!zathura 001_first.pdf
+
+Patience:   slow
+-->
+
+```{r setup, include=F, eval=T}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE)
+
+```
+
+```{r set_hooks, include=F, eval=T}
+# foo1 will be a function
+library(knitr)
+knit_hooks$set(foo1 = function(before, options, envir) {
+  if (before) {
+    paste0( '\\footnotesize _I appear before a chunk!_\n\n', '\\rule{3cm}{.4pt}')
+  } else {
+    '\\normalsize  \n\n_I am after a chunk..._'
+  }
+})
+```
+
+<!--        Begin       -->
+
+### Shift in thinking:
+
+   Normal workflow:  acquire database/cleanup/analyis
+
+   Consider a different way:  R to extract specific pieces of information from a
+   resource.
+
+
+###  Window to otherwise closed software. 
+
+Most websites are closed software:  You can not poke around in the internals.
+API is way to open a close software system in specific ways and to specific users.
+
+
+### First,  quick Examples with command line tool:   cURL
+
+```{r slide_restful, child=c("slide_restful_examples.Rmd")}
+```
+
+<!--    small centered horizontal line (for visually clarity) -->
+<!--    !so said NOT to use \centerline -->
+
+\centerline{\rule{3cm}{.4pt}}
+
+###   More About RESTFUL APIs
+```{r what_are, child=c("slide_what_are_REST_API.Rmd")}
+```
+
+\rule{3cm}{.4pt}
+
+
+###   To use APIs, what do you really need to know?
+```{r what_technologies, child=c("slide_goal.Rmd")}
+```
+
+
+```{r, curl_intro, child=c("slide_curl_intro_github.Rmd")}
+```
+
+
+
+###  Creating APIs. 
+```{r, curl_intro, child=c("slide_openAPI.Rmd") }
+```
+
+```{r xxx}
+knitr::knit_exit()
+```
+
+
+<!--   R   Finally!    Show work through vignette for httr2? -->
+
+#   We know some of the plumbing:  HTTP, API documentation, CURL ... 
+
+##   Finally, Do this in R, httr2: 
+
+https://httr2.r-lib.org
+
+show httpbin.org
+show github.com
+##  EXAMPLE:   Basic GET in R
+```{r, httr2_intro, child=c("slide_httr2_intro.Rmd")}
+```
+
+
+
+<!--    But wait !    Security  -->
+
+#   
+-   But how to include security?
+    
+
+
+
+
+<!--    Add a user of your code:   3 players:   User, your code, the server -->
+#  One issue not to overlook:  3rd party Security
+```{r, httr2_intro, child=c("slide_security.Rmd")}
+```
+
+#   So far, the user has been you - the Developer.  What if you want others to
+use app?     They are going to give their username/password to your app.
+```{r, httr2_intro, child=c("slide_oauth_intro.Rmd")}
+```
+
+Reference and Further Reading (
+
+
+<!--    Practical difficulties - each API different -->
+
+##  EXAMPLE    Use Github uses token (PAT) in R.
+
+##  New problem:  each API server is different!
+(Quote:   httr2:: docs)
+
+## EXAMPLES:   Many (follow httr2:: vignette) + Google, Youtube ...
+
+
+```{r, openAPI, child=c("slide_openAPI.Rmd")}
+```
+
+```{r, r_pkgs, child=c("slide_R_pkgs.Rmd")}
+```
+
+https://github.com/jimrothstein/docs/blob/master/misc_files/001_R_stats_tech_reading.md
+
+
+
+```{r render1, eval=F, include=F}
+{
+file <- "000_TALK_CURL.Rmd"
+file  <- normalizePath(file)
+file
+}
+rmarkdown::render(file)
+```

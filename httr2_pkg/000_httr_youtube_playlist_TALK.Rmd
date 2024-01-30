@@ -1,0 +1,322 @@
+--- 
+title: Template for .Rmd 
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  pdf_document: 
+    latex_engine: lualatex
+toc: TRUE 
+toc_depth:  1 
+fontsize: 10pt 
+geometry: margin=0.5in,top=0.25in 
+TAGS:  httr,
+---
+
+PURPOSE:    httr:: package, show all videos in one playlist
+
+*  HEAD shows what is being sent (see the simple error?)
+*  httr::HEAD("https://www.googleapis.com/youtube/v3/playlists",
+ 							query= query,
+ 							config = config) 
+
+REF : 
+https://www.r-bloggers.com/2019/01/how-to-authenticate-using-oauth2-through-r-2/
+```{r setup, include=FALSE 		}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "      ##",
+  error = TRUE,
+  collapse = TRUE
+)
+load_all()
+library(httr)
+```
+
+```{r endpoints1}
+if (F) {
+  # remove old .httr-oauth (till I know what I am doing)
+  file.remove(".httr-oauth")
+}
+
+# be sure enabled
+base::options("httr_oauth_cache" = TRUE)
+
+# https://developers.google.com/accounts/docs/OAuth2InstalledApp
+```
+
+#### Google endpoints
+```{r endpoints}
+httr::oauth_endpoints("google")
+# <oauth_endpoint>
+#  authorize: https://accounts.google.com/o/oauth2/auth
+#  access:    https://accounts.google.com/o/oauth2/token
+#  validate:  https://www.googleapis.com/oauth2/v1/tokeninfo
+#  revoke:    https://accounts.google.com/o/oauth2/revoke
+```
+
+## Create & Register myapp with Google
+```{r register}
+#  Security:  key & secret are in ~/.Renviron ( do not push to github )
+#  NOTE:  google calls this key as "Client ID"
+#   Rmk:   key is visible in myapp
+
+myapp <- httr::oauth_app(
+  "google",
+  key <- Sys.getenv("OAUTH2_ID"),
+  secret <- Sys.getenv("OAUTH2_SECRET")
+)
+
+
+# myapp
+```
+
+## SCOPES, auth.code
+  - Create .httr-oauth (binary) in project root.
+
+##  SCOPE 3 (BEST)
+  - USE THIS auth.code for most work
+  - Add scope for various youtube access.
+  - youtube.force-ssl needed to retrieve user's playists, videos in each
+```{r youtube_scopes}
+#
+{
+  scope <- c("https://www.googleapis.com/auth/youtube.force-ssl")
+
+  # c("https://www.googleapis.com/auth/userinfo.profile",
+  # "https://www.googleapis.com/auth/userinfo.email",
+  # "https://www.googleapis.com/auth/youtube",  # manage
+  # "https://www.googleapis.com/auth/youtube.readonly",
+  # "https://www.googleapis.com/auth/youtube.force-ssl"
+  #  )
+}
+```  
+
+## Get auth.code | token ....
+```{r get_auth.code}
+# NO .httr-oauth?  |  THEN pop, asks users,  AND warns not verified, not safe
+
+# Rmk1:  option("httr_oauth_cache") was set to TRUE , token will then know to store
+auth.code <- httr::oauth2.0_token(
+  endpoint = httr::oauth_endpoints("google"),
+  app = myapp,
+  # cache = getOption("httr_oauth_cache"),
+  cache = T,
+  scope = scope
+)
+
+auth.code
+```
+
+
+# ============
+##### Videos in one playlist
+# ============
+
+
+### return structure with all params
+```{r prelim}
+## if you need:
+# playlists  <- readRDS(playlists, file=here("data","playlists.RDS"))
+
+## documentary playlist
+## list=PLbcglKxZP5POssPWRwjJff_vOY3o8eWdI
+```
+
+```
+# REFERENCE
+# curl \
+#   'https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails&playlistId=PLbcglKxZP5PNx1CGmLKT68vKELqrhj4hY&fields=pageInfo&key=[YOUR_API_KEY]' \
+#   --header 'Authorization: Bearer [YOUR_ACCESS_TOKEN]' \
+#   --header 'Accept: application/json' \
+#   --compressed
+```
+
+```{r initiatize}
+type <- "videos"
+
+## to get all videos, for ONE playlist
+global_params <- initialize()
+global_params
+```
+
+
+#### No S3, construct one generic query.
+```{r generic_query}
+generic_q <- function() {
+  ## query_defaults (starter values)
+  if (!exists("query_defaults")) query_defaults <- get_typical_values()
+
+  ## put it all togehter
+  list(
+    ## from global_params
+    key = global_params$api$api_key,
+
+    ## for videos:
+    base_url = "https://www.googleapis.com/youtube/v3/playlistItems",
+    part = "snippet",
+    ## only change
+    fields = "pageInfo.totalResults",
+
+    # fields=paste(sep=",", "nextPageToken",
+    #                  "items(id,snippet(title,description,publishedAt))"),
+
+
+    ## from query_defaults (only what comments needs)
+    maxResults = query_defaults$maxResults,
+    channelId = query_defaults$channelId,
+    playlistId = "PLbcglKxZP5PN3RCRdidmIxRrB8luufWIW", # gloria dehaven
+
+    ## don't forget
+    pageToken = NULL
+  )
+}
+
+
+query_params <- generic_q()
+query_params
+```
+
+#### Based on type, we now modify query_params list.
+```{r modify_params}
+# =============================
+## assume type = "videos"
+# =============================
+
+query_params$fields <- paste(
+  sep = ",", "nextPageToken",
+  "items(id,snippet(title,description,publishedAt))"
+)
+
+query_params$playlistId <- "PLlXfTHzgMRUIqYrutsFXCOmiqKUgOgGJ5" # Pavel Grinfeld, Linear Alg 3
+
+## documentary playlist
+query_params$playlistId <- "PLbcglKxZP5POssPWRwjJff_vOY3o8eWdI"
+
+query_params
+
+## spares
+## query_params$playlistId  <- "PLbcglKxZP5PMU2rNPBpYIzLTgzd5aOHw2"
+# playlistId  <- "PLbcglKxZP5PN3RCRdidmIxRrB8luufWIW"  # gloria dehaven
+# spare:
+# query_params$playlistId =    "PLbcglKxZP5PN3RCRdidmIxRrB8luufWIW"  # gloria dehaven
+# playlistId  <-  "PLlXfTHzgMRUIqYrutsFXCOmiqKUgOgGJ5"  # Pavel Grinfeld, Linear Alg 3
+# videoId  <- "Mec9sw1cJk8"  # carter
+# playlistId  <- "PLbcglKxZP5PMZ7afIT7E2o9NwQIzqTI5l"
+## documentary playlist
+## list=PLbcglKxZP5POssPWRwjJff_vOY3o8eWdI
+```
+
+
+
+
+#### Have everything, pack into bundle (3 elements)
+```{r pack}
+bundle <- list(
+  url = query_params$base_url,
+  config = global_params$config,
+  query = query_params
+)
+
+bundle$url
+bundle$config
+bundle$query
+```
+### get_batch_videos
+```{r next_batch}
+get_batch <- function(url = NULL, query = NULL, config = NULL) {
+  r <- httr::GET(
+    url = url,
+    query = query,
+    config = config,
+    httr::verbose()
+  )
+
+
+  ## process resonse, return table
+  ## process(x = videos, r=r, videosdb = videosdb)
+}
+```
+
+#### No S3, process batch
+```{r process}
+# ======================
+##  assume type=videos
+# ======================
+
+process <- function(r = NULL, type = NULL, db = NULL) {
+  json_content <- get_json(r)
+
+  if (type == "videos") {
+    db <- json_content$items$snippet
+    nextPageToken <- json_content$nextPageToken
+    list(
+      nextPageToken = nextPageToken,
+      db = db
+    )
+  }
+}
+```
+
+
+## sample call
+##    process(r = r, type = "videos", db = )
+
+```
+
+#### combine 1st batch + additional (if any)
+```{r all_videos_ONE_playlist}
+## run 1st time (may refresh stale token)
+
+db <- NULL
+r <- get_batch(url = bundle$url, query = bundle$query, config = bundle$config)
+r <- process(r = r, type = "videos", db = db)
+db <- r$db
+nextPageToken <- r$nextPageToken
+
+## Continue to get batches till null Token
+while (!is.null(nextPageToken)) {
+  bundle$query$pageToken <- nextPageToken
+  r <- get_batch(url = bundle$url, query = bundle$query, config = bundle$config)
+  r <- process(r = r, type = "videos", db = db)
+  db <- rbind(db, r$db)
+  nextPageToken <- r$nextPageToken
+}
+
+## finally
+#  db
+
+
+## videos  <- get_playlist_videos(playlistId)
+str(db)
+print(db$title)
+
+
+#   View(db)
+```
+
+
+```{r}
+saveRDS(db, file = here::here("data/videosdb.RDS"))
+```
+
+```{r}
+
+```
+cleanup videos
+```{r cleanup, include=F, eval=F}
+t <- videos %>%
+  dplyr::select(title, position) %>%
+  dplyr::arrange(title)
+t
+str(t)
+```
+
+
+
+```{r render, eval=FALSE, include=F	} 
+file <- "/home/jim/code/youtube_api/httr2_pkg/000_httr_youtube_playlist_TALK.Rmd"
+
+rmarkdown::render(file,
+  output_dir = "~/Downloads/print_and_delete"
+)
+```

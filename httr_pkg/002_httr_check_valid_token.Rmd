@@ -1,0 +1,123 @@
+--- 
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+toc: TRUE 
+toc_depth:  1 
+fontsize: 12pt 
+geometry: margin=0.5in,top=0.25in 
+---
+
+##  Test if token is valid
+
+
+SETUP ! (begin here)
+- once auth.code is stored in Options() s/d not need to be here
+* For Troubleshooting
+*  HEAD shows what is being sent (see the simple error?)
+*  httr::HEAD("https://www.googleapis.com/youtube/v3/playlists",
+ 							query= query,
+ 							config = config) 
+
+REF : 
+https://www.r-bloggers.com/2019/01/how-to-authenticate-using-oauth2-through-r-2/
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE)
+load_all()
+library(R6)
+```
+
+
+
+## check token
+```{r Token, eval=FALSE   }
+
+# .httr-oauth 
+file.exists(".httr-oauth")
+
+token  <- readRDS(".httr-oauth")
+token
+
+## careful  (auth.code created below)
+identical(auth.code, token)
+# [1] FALSE
+
+x  <- token[[1]]
+auth.code  <- x
+identical(auth.code, x)
+# [1] FALSE
+
+```
+
+R6  
+see https://httr.r-lib.org/reference/Token-class.html
+```{r caching}
+ans  <- x$validate()
+ans
+
+# print method
+x$print()
+
+# a field
+x$endpoint
+
+# app field
+x$app
+
+# token info (including scope)
+names(x$credentials)
+x$credentials
+
+```
+
+
+
+
+# =========
+##  Need Token?
+# =========
+
+```{r endpoints}
+# endpoints
+  httr::oauth_endpoints("google")
+
+## register  app
+   myapp <- httr::oauth_app("google",
+     key  <- Sys.getenv("OAUTH2_ID"),
+     secret  <- Sys.getenv("OAUTH2_SECRET")
+   )
+   myapp
+
+## maximum scope
+   scope = 
+    c("https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/youtube",  # manage
+    "https://www.googleapis.com/auth/youtube.readonly",
+    "https://www.googleapis.com/auth/youtube.force-ssl"
+    )
+
+
+## get auth.code ie token
+    auth.code <- httr::oauth2.0_token(
+              endpoint = httr::oauth_endpoints("google"),
+              app = myapp,
+              cache = T, 
+              scope = scope
+)
+auth.code
+
+```
+
+
+
+
+
+

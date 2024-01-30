@@ -1,0 +1,39 @@
+# =======================================================
+####    SHELL environment variables base on ~/.Renviron
+# =======================================================
+#   file <- "055_curl_faker.txt#"
+
+# BASE:
+# https://fakerapi.it/api/v1/{resource}
+
+# where resource is one of person, books, companies ......
+
+# params are 
+# _quantity _locale _seed
+
+
+#   Try fakerapi.it/api/v1/companies
+#   _quantity=1
+curl -s -G -d '_quantity=1' https://fakerapi.it/api/v1/companies
+
+
+##  images
+##  by using -d 'x= ...' -d 'y= ...'  let curl tack on params to endpoint
+##  -G is required for htis.
+
+curl -s -i -G -d '_quantity=2' -d '_width=380' https://fakerapi.it/api/v1/images
+
+
+
+
+
+
+
+
+
+
+# ==================
+# WORKS in Browser
+https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=XK..snip
+# ==================
+

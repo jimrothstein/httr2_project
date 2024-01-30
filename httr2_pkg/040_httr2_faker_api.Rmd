@@ -1,0 +1,156 @@
+--- 
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  html_document:
+        code_folding: show
+        toc: true 
+        toc_depth: 4
+        toc_float: true
+        mathjax: default
+  pdf_document:   
+    latex_engine: lualatex  
+    toc: true
+    toc_depth:  4   
+    keep_tex:  true  
+    keep_md:   true  
+  header-includes:  
+    -  \usepackage{helvet}  
+    -  \renewcommand{\familydefault}{\sfdefault}  
+    -  \usepackage{ulem}
+fontsize: 10pt   
+geometry: margin=0.4in,top=0.25in   
+TAGS:  httr2,
+---
+
+
+Copied from vignette
+https://httr2.r-lib.org/articles/httr2.html
+
+REF:    https://fakerapi.it/en
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE)
+library(httr2)
+```
+
+```{r set_hooks}
+# foo1 will be a function
+# only fires in chunks with foo1=<anything at all>
+
+library(knitr)
+knit_hooks$set(foo1 = function(before, options, envir) {
+  if (before) {
+    c('\\textcolor{red}{color} _\n\n', 
+    '\\footnotesize _I appear before a chunk!_\n\n')
+  } else {
+    '\\normalsize  \n\n_I am after a chunk..._'
+  }
+})
+
+```
+
+<!-- trigger foo1 -->
+```{r foo1='whatever'}
+1+1
+```
+Base URL
+```
+https://fakerapi.it/api/v1/{resource}
+```
+Example: resource is `images` and parameter is `width=380`
+```
+https://fakerapi.it/api/v1/images?_width=380
+
+```
+Put in browser (cut & paste)
+```
+https://fakerapi.it/api/v1/images?_width=380&_quantity=2
+
+	
+status	"OK"
+code	200
+total	2
+data	
+0	
+title	"Ipsam et et iure sint totam."
+description	"Eum nemo magnam repellendus ea dolor. Ipsam animi eos esse sint et consequatur voluptas. Est rerum tenetur aut."
+url	"http://placeimg.com/380/480/any"
+
+1	
+title	"Nam consequuntur eligendi ut."
+description	"Qui qui libero et. Non asperiores cupiditate qui amet. Unde adipisci dolores quia iure labore. Ut autem maiores ut minima iste quia repellendus sunt."
+url	"http://placeimg.com/380/480/any"
+```
+
+Build Request
+```{r}
+req <- request("https://fakerapi.it/api/v1")
+
+# append resource and query params
+req  <- req %>% 
+  req_url_path_append("images") %>% 
+  req_url_query(`_width` = 380, `_quantity` = 1)
+
+req
+req |> req_dry_run()
+
+resp  <- req |> req_perform()
+
+http://fakerapi.it/api/v1/images?_width=380&_quantity=1
+```
+#### response
+```{r resp}
+resp  <- req |> req_perform()
+resp
+
+resp  |> resp_body_json()
+
+# compare to browser results
+resp |> resp_headers()
+```
+
+
+
+
+```{r exit}
+knitr::knit_exit()
+```
+
+#### request to base
+```{r begin}
+req <- request("https://fakerapi.it/api/v1")
+resp <- req %>% 
+  # Then we add on the images path
+  req_url_path_append("images") %>% 
+  # Add query parameters _width and _quantity
+  req_url_query(`_width` = 380, `_quantity` = 1) %>% 
+  req_perform()
+
+# The result comes back as JSON
+resp %>% resp_body_json() %>% str()
+#> List of 4
+#>  $ status: chr "OK"
+#>  $ code  : int 200
+#>  $ total : int 1
+#>  $ data  :List of 1
+#>   ..$ :List of 3
+#>   .. ..$ title      : chr "Neque enim et debitis et."
+#>   .. ..$ description: chr "Debitis natus consequatur sint doloremque molestiae. Laborum iste voluptatem debitis."
+#>   .. ..$ url        : chr "http://placeimg.com/380/480/any"
+```
+
+
+```{r render, eval=F, include=F}
+
+file <- "/home/jim/code/youtube_api/httr2_pkg/040_httr2_faker_api.Rmd"
+
+rmarkdown::render(file,
+       output_format= "pdf_document",
+       output_dir = "~/Downloads/print_and_delete")
+```
+

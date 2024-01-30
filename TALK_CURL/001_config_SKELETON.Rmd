@@ -1,0 +1,33 @@
+#   file <- "001_config_SKELETON.txt"
+
+## =======================================   
+
+#   SKELETON #   WORKING !
+
+# =======================================
+#  PURPOSE: simple config file for curl
+
+#   USAGE:  curl --config 001_config_SKELETON.txt 
+# =======================================
+
+# works
+url =   "http://example.com"
+-D  "headers.txt"
+-v
+
+# suppress output
+-o /dev/null
+-s
+
+
+-w "THE response code = %{response_code}"
+
+#   Suppose OS_API_KEY is set in ~/.Renviron
+# In shell:
+#       key=$(Rscript -e "cat(Sys.getenv('OS_API_KEY'))")
+#       echo $var
+# =======================================================
+
+
+
+

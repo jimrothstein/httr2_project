@@ -1,0 +1,205 @@
+--- 
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  html_document:
+        code_folding: show
+        toc: true 
+        toc_depth: 4
+        toc_float: true
+        mathjax: default
+  pdf_document:   
+    latex_engine: lualatex  
+    toc: true
+    toc_depth:  4   
+    keep_tex:  true  
+    keep_md:   true  
+  header-includes:  
+    -  \usepackage{helvet}  
+    -  \renewcommand{\familydefault}{\sfdefault}  
+    -  \usepackage{ulem}
+fontsize: 10pt   
+geometry: margin=0.4in,top=0.25in   
+TAGS:  httr2,
+---
+PURPOSE:    HTTR2::   practice with OAUTH2 google People API
+Reproduce what browser can do.
+
+
+REF : 
+Google:   project;  jrGooglePeopleapi
+REF:    https://www.daimto.com/how-to-get-a-google-access-token-with-curl/
+
+https://httr2.r-lib.org/articles/httr2.html
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE)
+library(httr2)
+```
+
+
+
+####    Step 1, get AUTH.CODE (via Browser)
+```
+Put into browser to (1) authorize (2) return AUTH CODE
+Goal:  Do it R.
+```
+
+```
+## from httr:   useful?
+  httr::oauth_endpoints("google")
+# <oauth_endpoint>
+#  authorize: https://accounts.google.com/o/oauth2/auth
+#  access:    https://accounts.google.com/o/oauth2/token
+#  validate:  https://www.googleapis.com/oauth2/v1/tokeninfo
+#  revoke:    https://accounts.google.com/o/oauth2/revoke
+```
+
+####    For Google People API
+```{r usefu}
+
+#   from ~/.Renviron
+    client_id  <- Sys.getenv("PEOPLE_CLIENT_ID")
+    client_secret  <- Sys.getenv("PEOPLE_CLIENT_SECRET")
+
+endpoint = "https://accounts.google.com/o/oauth2/v2/auth"
+scope="https://www.googleapis.com/auth/userinfo.profile"
+```
+
+####    Get auth.code (via broswer)
+```{r auth}
+##  paste b into browser
+    b  <- paste0("https://accounts.google.com/o/oauth2/v2/auth?client_id=",
+        client_id,  "&",
+        "redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=https://www.googleapis.com/auth/userinfo.profile&response_type=code")
+
+##  Retrieve auth.code from browser and paste here
+auth.code  <- "4/1AX4XfWisGY43zYSJG_Cd3RiZOS0sg9jg3VjaEmSocGfeUaDrcflvlwBauYU"
+
+```
+
+
+#### Exchange auth.code 
+```
+curl -s \
+--request POST \
+--data "code=4/1AY0e-g7BhBt0QU9f5HTgNDGNR1GYtH12q4xvgL_D2Q34A&client_id=XXXX.apps.googleusercontent.com&client_secret=zYAoXDam3mqsdwabh3dQ3NTh&redirect_uri=urn:ietf:wg:oauth:2.0:oob&grant_type=authorization_code" \
+
+https://accounts.google.com/o/oauth2/token 
+```
+
+```{r exchange}
+##  For me:
+data  <- paste0("code=",auth.code,"&", 
+                "client_id=", client_id, "&",
+                "client_secret=",client_secret,"&",
+                "redirect_uri=urn:ietf:wg:oauth:2.0:oob&grant_type=authorization_code")
+data
+ "code=4/1AX4XfWisGY43zYSJG_Cd3RiZOS0sg9jg3VjaEmSocGfeUaDrcflvlwBauYU&client_id=358088442289-amr4b5f5l1h9jicffu12d9t1vooiv10d.apps.googleusercontent.com&client_secret=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&redirect_uri=urn:ietf:wg:oauth:2.0:oob&grant_type=authorization_code"
+
+## in httr2
+
+token_url  <- "https://accounts.google.com/o/oauth2/token" 
+
+request(token_url) |> req_method("POST") |> req_body_raw(data) |> req_dry_run()
+
+
+# error 400, "invalid \ncode=4/1....43\n^" thinks JSON
+request(token_url) |> req_method("POST") |> req_body_raw(data) |> req_perform() 
+
+
+req_url_query(data) |> req_dry_run() request(token_url) |> req_url_path_append(data) |> req_dry_run()
+request(token_url) |> req_url_path_append(data) |> req_perform()
+
+request(token_url) |> req_body_raw(data) |> req_dry_run()
+request(token_url) |> req_verbose() |> req_body_raw(data) |> req_perform() |> with_verbosity()
+last_response()
+```
+
+
+```
+####    Create client to youtube
+```{r client}
+
+myapp = httr2::oauth_client(
+        id =    client_id,
+        token_url = endpoint, 
+        name = "first_people_api"            
+    )
+
+myapp
+
+
+## get AUTH CODE:  seem to be 2 ways
+resp = req_oauth_auth_code(req = httr2::request("https://accounts.google.com/o/oauth2/v2/auth"), 
+                    client= myapp,
+                    auth_url = "https://accounts.google.com/o/oauth2/v2/auth")
+
+resp
+```
+```{r}
+req  <- request("https://accounts.google.com/o/oauth2/v2/auth?client_id=358088442289-amr4b5f5l1h9jicffu12d9t1vooiv10d.apps.googleusercontent.com&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=https://www.googleapis.com/auth/userinfo.profile&response_type=code")
+
+req
+## get no browser???
+res  <- req_perform(req)
+```
+
+```{r token}
+token  <-   oauth_flow_auth_code(client = myapp, 
+                     auth_url = "https://accounts.google.com/o/oauth2/auth",
+                     scope = scope
+                     )
+token
+```
+
+
+##  LEGACY
+#### GET can have header, query, not body
+#### get a req object, using httpbin, GET http://httpbin.org
+```{r}
+##  return what is sent
+req <- request("https://httpbin.org/get")
+req
+
+## tack on query
+req2 <- request("https://httpbin.org/get?q=joe")
+req2
+
+## now build, httr2 adds default headers
+req %>% req_dry_run()
+
+
+##  quote works
+req |> req_headers(name =  "jim", location =  quote(eugene) )
+```
+
+##  SCOPE 3 (BEST)
+  - USE THIS auth.code for most work
+  - Add scope for various youtube access.
+  - youtube.force-ssl needed to retrieve user's playists, videos in each
+```{r youtube_scopes}
+#  
+{
+scope = 
+  c("https://www.googleapis.com/auth/userinfo.profile",
+  "https://www.googleapis.com/auth/userinfo.email",
+  "https://www.googleapis.com/auth/youtube",  # manage
+  "https://www.googleapis.com/auth/youtube.readonly",
+  "https://www.googleapis.com/auth/youtube.force-ssl"
+   )
+}
+ ```  
+## Get auth.code | token ....
+
+```{r render, eval=FALSE	} 
+file <- ""
+file  <- basename(file)
+dir <- "rmd"
+
+jimTools::ren_pdf(file,dir)
+jimTools::ren_github(file, dir)
+```

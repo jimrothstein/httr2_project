@@ -1,0 +1,179 @@
+---
+title: "Template for .Rmd"
+output:
+  html_document:
+    toc: yes
+    toc_depth: '1'
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
+    toc: yes
+    toc_depth: 1
+fontsize: 12pt
+geometry: margin=0.5in,top=0.25in
+---
+
+
+## This is alternaive .... use S3
+
+## ======================================
+#### 001_get_comments, for GIVEN video
+## ======================================
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(
+    echo = TRUE,
+    comment = "      ##",
+    error = TRUE, 
+    collapse = TRUE)
+load_all()
+```
+
+```{r initialize}
+## initialize takes no args, returns list of params good for entire file
+global_params <- initialize()
+global_params
+```
+####  S3 to get query_params
+```{r S3}
+
+##  S3 object: playlists
+    playlists  <- structure(list(), class="playlists")
+
+##  generic function:  get_query_params
+    get_query_params  <- function(x) UseMethod("get_query_params")
+```
+
+
+#### S3 method for S3 object playlists
+```{r S3_method}
+    get_query_params.playlists  <- function(x) {
+
+    ## query_defaults (starter values)
+    if (!exists("query_defaults")) query_defaults <- get_typical_values()
+
+    ## put it all togehter
+    list( 
+      ## from global_params
+      key = global_params$api$api_key,
+
+    ## for playlists
+    base_url = "https://www.googleapis.com/youtube/v3/playlists",
+    part  =  "snippet",
+    fields=paste(sep=",", "nextPageToken",
+                  "items(id,snippet(title,description,publishedAt))"),
+
+
+    ## from query_defaults (only what comments needs)
+      channelId = query_defaults$channelId,
+      #videoId = query_defaults$videoId,
+      #maxResults = query_defaults$maxResults,
+
+    ## don't forget 
+      pageToken = NULL
+    )
+   } 
+
+
+query_params  <- get_query_params(playlists)
+query_params
+
+```
+
+#### Have everything, pack into bundle (3 elements)
+```{r pack}
+
+bundle  <- list(
+                url = query_params$base_url,
+                config = global_params$config ,
+                query = query_params
+                )
+                
+}
+bundle$url
+bundle$config
+bundle$query
+
+
+# spare:
+videoId  <- "Mec9sw1cJk8"  # carter
+#playlistId  <- "PLbcglKxZP5PMZ7afIT7E2o9NwQIzqTI5l"
+
+```
+## HELPER:
+
+More batches?
+*  Helper function: 
+*  Get next page token
+*  Run GET again,  return next r
+
+```{r get_batch}
+
+get_batch  <- function(url = NULL,  query = NULL, config=NULL) {
+  res <- httr::GET(url = url, query = query, config= config ) %>% 
+  httr::stop_for_status()
+}
+
+```
+
+## 1st batch
+```{r get}
+## reminder:  config has already processed the token
+{
+r  <- get_batch(url = bundle$url , 
+                  query=bundle$query, 
+                  config = bundle$config )
+r
+}
+
+
+##  process_comments runs r through json  and content, which returns list of
+##  nextPageToken and content 
+playlists  <- process_playlists(r)
+
+playlists %>% knitr::kable()
+```
+
+Main loop:   remaining batches
+```{r main_loop}
+
+## request uses pageToken, but the response returns nextPageToken
+while ( !is.null(httr::content(r)$nextPageToken )) {
+  bundle$query$pageToken  <- httr::content(r)$nextPageToken
+  print(bundle$query$pageToken)
+	r  <- get_batch(url = bundle$url, 
+                  query=bundle$query, 
+                  config = bundle$config )
+	playlists  <- process_playlists(r, playlists)
+
+} # end loop
+```
+```{r examine_playlists}
+
+## playlists
+head(playlists)
+saveRDS(playlists, file=here("data","playlists.RDS"))
+View(playlists)
+```
+
+```{r kableExtra}
+library(kableExtra)
+
+## opens up firefox:
+kbl(playlists) %>% kable_styling(full_width = F) %>% column_spec(2, width= "30em")
+```
+
+
+```{r render, eval=FALSE, include=FALSE 	} 
+# TODO:  file is found when knitr runs (see above)
+
+# file must be of form:
+# dir/name_of_this_file    where dir is relative to project root
+file <- "rmd/009ALT_ONE_video_ALL_comments.Rmd"
+
+# in general, pdf will look nicer
+rmarkdown::render(file,
+                  #output_format = "pdf_document",
+                  output_format = "html_document",
+                  output_file = "~/Downloads/print_and_delete/out")
+```

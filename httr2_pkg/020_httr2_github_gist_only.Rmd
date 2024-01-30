@@ -1,0 +1,194 @@
+--- 
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  html_document:
+        code_folding: show
+        toc: true 
+        toc_depth: 4
+        toc_float: true
+        mathjax: default
+  pdf_document:   
+    latex_engine: lualatex  
+    toc: true
+    toc_depth:  4   
+    keep_tex:  true  
+    keep_md:   true  
+  header-includes:  
+    -  \usepackage{helvet}  
+    -  \renewcommand{\familydefault}{\sfdefault}  
+    -  \usepackage{ulem}
+fontsize: 10pt   
+geometry: margin=0.4in,top=0.25in   
+TAGS:  httr2,
+---
+
+
+REF : GITHUB and GIST
+https://httr2.r-lib.org/articles/httr2.html
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "      ##",
+  error = TRUE,
+  collapse = TRUE
+)
+library(httr2)
+load_all()
+```
+
+#### show HEADERS
+
+```{r setup_details}
+##  replace httr2:: function with wrapper.  Makes default to NOT redact.
+
+req_dry_run <- function(..., redact_headers = F) {
+  httr2::req_dry_run(..., redact_headers = redact_headers)
+}
+
+##  SET/GET
+Sys.setenv(FAKE = "joke")
+Sys.getenv("FAKE")
+
+system("echo hi")
+system2("v=FAKE")
+```
+
+
+#### git should NOT pick this up
+```{r}
+writeLines(text = "FOO", con = "_secret_file")
+readLines("_secret_file")
+```
+
+#### read API codes from ~/.Renviron and save to local file that git ignores
+```{r}
+## github token, for GIST only
+
+HTTR2_GIST <- Sys.getenv("HTTR2_GIST")
+HTTR2_GIST
+writeLines(text = paste0("HTTR2_GIST=", HTTR2_GIST), con = " _HTTR2_GIST")
+token <- HTTR2_GIST
+```
+
+
+###    GITHUB GISTS API
+
+####    Authenication
+```{r begin}
+## use my person token (in ~/.Renviron)
+token <- Sys.getenv("HTTR2_GIST")
+token
+
+req <- request("https://api.github.com/gists") %>%
+  req_headers(Authorization = paste("token", token))
+
+## note 'redacted', but httr2 knew to add header
+## request OBJECT
+req
+
+
+req %>% req_dry_run()
+
+## run it to see what sending to server
+resp <- req %>% req_perform()
+length(resp) # list 5, one is headers (26 list) and another is body (raw)
+str(resp)
+
+##  nested list, quite a bit
+resp
+resp |> resp_body_json()
+```
+
+
+####    At this point, have successfully access Gist api
+
+Follow Hadley in checking errors and building out functions to work with github
+gists.   Goal is;  upload gits
+
+#### Deliberate error to see it:
+```{r error}
+resp <- request("https://api.github.com/gists") %>%
+  req_url_query(since = "abcdef") %>%
+  req_headers(Authorization = paste("token", token)) %>%
+  req_perform()
+
+#> Error: HTTP 422 Unprocessable Entity.
+```
+```{r error_fct}
+gist_error_body <- function(resp) {
+  body <- resp_body_json(resp)
+
+  message <- body$message
+  if (!is.null(body$documentation_url)) {
+    message <- c(message, paste0("See docs at <", body$documentation_url, ">"))
+  }
+  message
+}
+gist_error_body(resp)
+```
+
+####   nicely printing errors
+```{r}
+request("https://api.github.com/gists") %>%
+  req_url_query(since = "yesterday") %>%
+  req_headers(Authorization = paste("token", token)) %>%
+  req_error(body = gist_error_body) %>%
+  req_perform()
+```
+
+
+#### rate limiting
+```{r}
+resp <- req %>% req_perform()
+resp %>% resp_headers("ratelimit")
+```
+
+####   Finally, connect to the gist
+```{r}
+req_gist <- function(token) {
+  request("https://api.github.com/gists") %>%
+    req_headers(Authorization = paste("token", token)) %>%
+    req_error(body = gist_error_body)
+  # %>%
+  # req_retry(
+  #  is_transient = gist_is_transient,
+  #  after = gist_after
+  # )
+}
+
+# works
+req_gist(token) %>% req_perform()
+```
+
+####    Upload
+```{r}
+req <- req_gist(token) %>%
+  req_body_json(list(
+    description = "This is my cool gist!",
+    files = list(test.R = list(content = "print('Hi!')")),
+    public = FALSE
+  ))
+req %>% req_dry_run()
+
+
+# works !
+resp <- req %>% req_perform()
+resp
+
+resp %>% resp_headers()
+resp %>% resp_body_json()
+
+# seems easier to read (if not manipulate)
+resp %>% resp_raw()
+
+id <- resp %>%
+  resp_body_json() %>%
+  .$id
+id
+```
+
+
+
+

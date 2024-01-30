@@ -1,0 +1,22 @@
+#   file <- "023_curl_github_labels.txt#"
+
+
+# ===========================================
+#  WORKS:  w/ -u jimrothstein:$token at CLI
+-I
+-i
+-s
+url="https://api.github.com/gists"
+-H "Accept: application/vnd.github.v3+json"
+-H "Authorization: token $token"
+#-d "{"per_page" : "1"}'
+
+
+#   Pagination:   Github says DO NOT GUESS
+
+
+##  FAILS
+##  curl -H 'Authorization: token $token' https://api.github.com/user/repos
+
+##  WORKS
+## curl -u jimrothstein:$token https://api.github.com/user/repos

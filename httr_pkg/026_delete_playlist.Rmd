@@ -1,0 +1,76 @@
+
+	 vim:linebreak:nowrap:nospell:cul tw=78 fo=tqlnr foldcolumn=3 
+	 
+--- 
+# Spaces, no Tabs
+title: Template for .Rmd 
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+toc: TRUE 
+toc_depth:  1 
+fontsize: 12pt 
+geometry: margin=0.5in,top=0.25in 
+
+---
+/home/jim/.config/nvim/templates/skeleton.Rmd
+othercomments
+---
+<!-- 
+set cul   "cursorline
+cc=+1			"colorcolumn is 1 more than tw
+-->
+
+<!--  commments -->
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,  
+											comment="      ##",  
+											error=TRUE, 
+											collapse=TRUE) 
+```
+
+<!--  RENDER:  see bottom -->
+
+```{r library, include=FALSE		}
+library(jimTools) 
+``` 
+
+HERE -- What is playlistId for "Watch Later"  ?
+```{r begin}
+l <- get_typical_yt()
+maxResults  <- l$maxResults
+playlistId  <- l$playlistId
+video_id = l$videoId
+base_url  <- "https://www.googleapis.com/youtube/v3/playlists"
+```
+
+
+```{r}
+
+api_opts <- list(part = "snippet",
+                 id = video_id,
+                 maxResults = maxResults,
+                 fields="items(snippet(title))",
+                 key = api$api_key)
+
+#DELETE https://www.googleapis.com/youtube/v3/playlists
+r <- httr::GET(base_url, query = api_opts) 
+httr::content(r)
+
+***
+
+```{r knit_exit()} 
+knitr::knit_exit() 
+```
+
+/newpage
+
+```{r render, eval=FALSE	} 
+file <- "" 
+file  <- basename(file) 
+dir <-"rmd"
+
+jimTools::ren_pdf(file,dir)
+jimTools::ren_github(file, dir)
+```

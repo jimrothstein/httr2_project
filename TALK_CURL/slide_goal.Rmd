@@ -1,0 +1,40 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+#output:  
+#    pdf_document:
+#      latex_engine:  lualatex  
+#output:  html_document
+output:
+    pdf_document:
+    beamer_presentation:
+        latex_engine: lualatex
+fontsize:  10pt
+---
+
+
+### Unfortunately, most APIs do not have examples in R.
+Example:  youtube:     https://developers.google.com/youtube/v3/docs/videos/list
+
+
+###   First, understand some of the technologies
+
+-   HTTP: messages, GET, POST,  headers, body, URI  
+    MDN: https://developer.mozilla.org/en-US/docs/Web/HTTP
+    In particular,https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages 
+
+-   Tools:   curl, Postman and many others
+    cURL:  curl.se
+
+-   Read API documentation (each is differnt)
+        https://docs.github.com/en/rest/overview/endpoints-available-for-github-apps
+        https://developers.google.com/youtube/v3/docs/playlists/list
+
+```
+(more references at end )
+```
+
+
+
+

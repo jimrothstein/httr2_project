@@ -1,0 +1,37 @@
+
+<!--
+# ----------------------------
+# file <- "003_curl_example.sh "
+# ----------------------------
+#
+# =========================
+#   FROM POSTMAN Tutorial
+#   PURPOSE:  practice curl as shell script. 
+#
+#   DESCRIPTION:    
+#       variables `base` and `endpoint` are defined.
+#       curl is then executed
+#
+#   USAGE: Run as shell script
+#
+# =========================
+#   BASE: https://simple-books-api.glitch.me
+#   ENDPOINT: https://simple-books-api.glitch.me/status/status
+# 
+# WORKS
+#   curl --head https://simple-books-api.glitch.me
+
+-->
+
+```{zsh}
+base="https://simple-books-api.glitch.me"
+curl -s $base
+echo " " 
+echo " " 
+endpoint=/status
+curl -s ${base}${endpoint}
+```
+
+
+
+

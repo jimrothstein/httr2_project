@@ -1,0 +1,574 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  10pt,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={R and Restful APIs},
+  pdfauthor={jim rothstein},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{R and Restful APIs}
+\author{jim rothstein}
+\date{}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{4}
+\tableofcontents
+}
+\hypertarget{shift-in-thinking}{%
+\subsubsection{Shift in thinking:}\label{shift-in-thinking}}
+
+Normal workflow: acquire database/cleanup/analyis
+
+Consider a different way: R to extract specific pieces of information
+from a resource.
+
+\hypertarget{window-to-otherwise-closed-software.}{%
+\subsubsection{Window to otherwise closed
+software.}\label{window-to-otherwise-closed-software.}}
+
+Most websites are closed software: You can not poke around in the
+internals. API is way to open a close software system in specific ways
+and to specific users.
+
+\hypertarget{first-quick-examples-with-command-line-tool-curl}{%
+\subsubsection{First, quick Examples with command line tool:
+cURL}\label{first-quick-examples-with-command-line-tool-curl}}
+
+\begin{itemize}
+\item
+  List of \textbf{youtube videos} in my Documentaries playlist,
+  000\_httr\_youtube\_playlist\_TALK.pdf
+\item
+  Check \textbf{politican's donors}
+\end{itemize}
+
+\textbf{\url{http://www.opensecrets.org/api/?method=getLegislators\&id=NJ\&apikey=__apikey}}
+
+\footnotesize \emph{I appear before a chunk!}
+
+\rule{3cm}{.4pt}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{export} \OtherTok{token=$(}\NormalTok{Rscript {-}e }\StringTok{"cat(Sys.getenv(\textquotesingle{}OS\_API\_KEY\textquotesingle{}))"}\OtherTok{)}
+\KeywordTok{export} \OtherTok{endpoint=}\StringTok{"http://www.opensecrets.org/api/?method=getLegislators\&id=NJ\&apikey="}
+\KeywordTok{echo} \OtherTok{$endpoint$token}
+
+\CommentTok{\#curl {-}{-}location{-}trusted {-}{-}data{-}urlencode "id=NJ" {-}{-}data{-}urlencode="apikey=$token" http://www.opensecrets.org/api/?method=getLegislators}
+
+      \CommentTok{\#\# This message is from  \textasciitilde{}/.Rprofile}
+      \CommentTok{\#\# http://www.opensecrets.org/api/?method=getLegislators\&id=NJ\&apikey=6228a3fb184b949386fd16176fb7bfc6}
+\end{Highlighting}
+\end{Shaded}
+
+\normalsize
+
+\emph{I am after a chunk\ldots{}}
+
+\begin{itemize}
+\tightlist
+\item
+  List or Create \textbf{Github Gist}
+\end{itemize}
+
+To obtain my gists (only)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{export} \OtherTok{token=$(}\NormalTok{Rscript {-}e }\StringTok{"cat(Sys.getenv(\textquotesingle{}GITHUB\_PAT\textquotesingle{}))"}\OtherTok{)}
+
+\NormalTok{curl {-}s }\KeywordTok{\textbackslash{}}
+\NormalTok{  {-}H }\StringTok{"Authorization: token }\OtherTok{$token}\StringTok{"} \KeywordTok{\textbackslash{}}
+\NormalTok{  {-}H }\StringTok{"Accept: application/vnd.github.v3+json"} \KeywordTok{\textbackslash{}}
+\NormalTok{  https://api.github.com/gists }\KeywordTok{\textbackslash{}}
+  \KeywordTok{|}\NormalTok{ head {-}n 30}
+      \CommentTok{\#\# This message is from  \textasciitilde{}/.Rprofile}
+      \CommentTok{\#\# [}
+      \CommentTok{\#\#   \{}
+      \CommentTok{\#\#     "url": "https://api.github.com/gists/fca25a57a4c741a8a663e1177fb099b9",}
+      \CommentTok{\#\#     "forks\_url": "https://api.github.com/gists/fca25a57a4c741a8a663e1177fb099b9/forks",}
+      \CommentTok{\#\#     "commits\_url": "https://api.github.com/gists/fca25a57a4c741a8a663e1177fb099b9/commits",}
+      \CommentTok{\#\#     "id": "fca25a57a4c741a8a663e1177fb099b9",}
+      \CommentTok{\#\#     "node\_id": "G\_kwDOAHwU\_9oAIGZjYTI1YTU3YTRjNzQxYThhNjYzZTExNzdmYjA5OWI5",}
+      \CommentTok{\#\#     "git\_pull\_url": "https://gist.github.com/fca25a57a4c741a8a663e1177fb099b9.git",}
+      \CommentTok{\#\#     "git\_push\_url": "https://gist.github.com/fca25a57a4c741a8a663e1177fb099b9.git",}
+      \CommentTok{\#\#     "html\_url": "https://gist.github.com/fca25a57a4c741a8a663e1177fb099b9",}
+      \CommentTok{\#\#     "files": \{}
+      \CommentTok{\#\#       "gistfile1.txt": \{}
+      \CommentTok{\#\#         "filename": "gistfile1.txt",}
+      \CommentTok{\#\#         "type": "text/plain",}
+      \CommentTok{\#\#         "language": "Text",}
+      \CommentTok{\#\#         "raw\_url": "https://gist.githubusercontent.com/jimrothstein/fca25a57a4c741a8a663e1177fb099b9/raw/ea0c49e6e366ad0a03f945f06384457bdaaeaa0b/gistfile1.txt",}
+      \CommentTok{\#\#         "size": 316}
+      \CommentTok{\#\#       \}}
+      \CommentTok{\#\#     \},}
+      \CommentTok{\#\#     "public": true,}
+      \CommentTok{\#\#     "created\_at": "2022{-}02{-}06T09:21:23Z",}
+      \CommentTok{\#\#     "updated\_at": "2022{-}02{-}06T09:23:15Z",}
+      \CommentTok{\#\#     "description": "APIs and R",}
+      \CommentTok{\#\#     "comments": 0,}
+      \CommentTok{\#\#     "user": null,}
+      \CommentTok{\#\#     "comments\_url": "https://api.github.com/gists/fca25a57a4c741a8a663e1177fb099b9/comments",}
+      \CommentTok{\#\#     "owner": \{}
+      \CommentTok{\#\#       "login": "jimrothstein",}
+      \CommentTok{\#\#       "id": 8131839,}
+      \CommentTok{\#\#       "node\_id": "MDQ6VXNlcjgxMzE4Mzk=",}
+\end{Highlighting}
+\end{Shaded}
+
+\textbackslash centerline\{
+
+\rule{3cm}{.4pt}
+
+\}
+
+\hypertarget{more-about-restful-apis}{%
+\subsubsection{More About RESTFUL APIs}\label{more-about-restful-apis}}
+
+\hypertarget{what-problems-does-it-solve}{%
+\paragraph{What problems does it
+solve?}\label{what-problems-does-it-solve}}
+
+\begin{verbatim}
+-   secure messaging between two computers
+-   allow 3rd party access to data, but with restrictions
+-   update data, such as add a new video to Youtube.
+-   allows devices running different software to communicate.
+-   allow us to logon using information from a 3rd (Use Google) 
+\end{verbatim}
+
+\hypertarget{restful-apis-refer-to-specfic-documentation-and-rules}{%
+\paragraph{Restful APIs refer to specfic documentation and
+rules:}\label{restful-apis-refer-to-specfic-documentation-and-rules}}
+
+\begin{verbatim}
+-   Consider a ball, any ball suitable for kicking.   
+-   The game of soccer and its rules would be `Restful API`.
+\end{verbatim}
+
+\hypertarget{examples-of-apis}{%
+\paragraph{Examples of APIs}\label{examples-of-apis}}
+
+Twitter: \url{https://developer.twitter.com/en/docs/twitter-api}\\
+NY Times: \url{https://developer.nytimes.com/apis}\\
+Google:
+\url{https://console.developers.google.com/apis/library?project=project2-296610}\\
+Youtube: \url{https://developers.google.com/youtube/v3/getting-started}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\rule{3cm}{.4pt}
+
+\hypertarget{to-use-apis-what-do-you-really-need-to-know}{%
+\subsubsection{To use APIs, what do you really need to
+know?}\label{to-use-apis-what-do-you-really-need-to-know}}
+
+\hypertarget{unfortunately-most-apis-do-not-have-examples-in-r.}{%
+\subsubsection{Unfortunately, most APIs do not have examples in
+R.}\label{unfortunately-most-apis-do-not-have-examples-in-r.}}
+
+Example: youtube:
+\url{https://developers.google.com/youtube/v3/docs/videos/list}
+
+\hypertarget{first-understand-some-of-the-technologies}{%
+\subsubsection{First, understand some of the
+technologies}\label{first-understand-some-of-the-technologies}}
+
+\begin{itemize}
+\item
+  HTTP: messages, GET, POST, headers, body, URI\\
+  MDN: \url{https://developer.mozilla.org/en-US/docs/Web/HTTP} In
+  particular,\url{https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages}
+\item
+  Tools: curl, Postman and many others cURL: curl.se
+\item
+  Read API documentation (each is differnt)
+  \url{https://docs.github.com/en/rest/overview/endpoints-available-for-github-apps}
+  \url{https://developers.google.com/youtube/v3/docs/playlists/list}
+\end{itemize}
+
+\begin{verbatim}
+(more references at end )
+\end{verbatim}
+
+\hypertarget{httphttpbin.org-good-for-practice}{%
+\paragraph{\texorpdfstring{\url{http://httpbin.org} Good for
+practice}{http://httpbin.org Good for practice}}\label{httphttpbin.org-good-for-practice}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{curl {-}s http://httpbin.org }\KeywordTok{|}\NormalTok{ head {-}n 10}
+      \CommentTok{\#\# \textless{}!DOCTYPE html\textgreater{}}
+      \CommentTok{\#\# \textless{}html lang="en"\textgreater{}}
+      \CommentTok{\#\# }
+      \CommentTok{\#\# \textless{}head\textgreater{}}
+      \CommentTok{\#\#     \textless{}meta charset="UTF{-}8"\textgreater{}}
+      \CommentTok{\#\#     \textless{}title\textgreater{}httpbin.org\textless{}/title\textgreater{}}
+      \CommentTok{\#\#     \textless{}link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700"}
+      \CommentTok{\#\#         rel="stylesheet"\textgreater{}}
+      \CommentTok{\#\#     \textless{}link rel="stylesheet" type="text/css" href="/flasgger\_static/swagger{-}ui.css"\textgreater{}}
+      \CommentTok{\#\#     \textless{}link rel="icon" type="image/png" href="/static/favicon.ico" sizes="64x64 32x32 16x16" /\textgreater{}}
+\end{Highlighting}
+\end{Shaded}
+
+Headers Only
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{curl {-}Is http://httpbin.org }
+\NormalTok{curl {-}Is example.com}
+      \CommentTok{\#\# HTTP/1.1 200 OK}
+      \CommentTok{\#\# Date: Tue, 01 Mar 2022 08:01:39 GMT}
+      \CommentTok{\#\# Content{-}Type: text/html; charset=utf{-}8}
+      \CommentTok{\#\# Content{-}Length: 9593}
+      \CommentTok{\#\# Connection: keep{-}alive}
+      \CommentTok{\#\# Server: gunicorn/19.9.0}
+      \CommentTok{\#\# Access{-}Control{-}Allow{-}Origin: *}
+      \CommentTok{\#\# Access{-}Control{-}Allow{-}Credentials: true}
+      \CommentTok{\#\# }
+      \CommentTok{\#\# HTTP/1.1 200 OK}
+      \CommentTok{\#\# Content{-}Encoding: gzip}
+      \CommentTok{\#\# Accept{-}Ranges: bytes}
+      \CommentTok{\#\# Age: 597620}
+      \CommentTok{\#\# Cache{-}Control: max{-}age=604800}
+      \CommentTok{\#\# Content{-}Type: text/html; charset=UTF{-}8}
+      \CommentTok{\#\# Date: Tue, 01 Mar 2022 08:01:39 GMT}
+      \CommentTok{\#\# Etag: "3147526947"}
+      \CommentTok{\#\# Expires: Tue, 08 Mar 2022 08:01:39 GMT}
+      \CommentTok{\#\# Last{-}Modified: Thu, 17 Oct 2019 07:18:26 GMT}
+      \CommentTok{\#\# Server: ECS (sec/9739)}
+      \CommentTok{\#\# X{-}Cache: HIT}
+      \CommentTok{\#\# Content{-}Length: 648}
+      \CommentTok{\#\# }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{curl {-}sI {-}G {-}d }\StringTok{"name=jim"}\NormalTok{ http://httpbin.org {-}o /dev/null}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{api-github}{%
+\subsubsection{API \& GITHUB}\label{api-github}}
+
+REFERENCE:
+\url{https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{curl https://api.github.com/zen}
+      \CommentTok{\#\#   \% Total    \% Received \% Xferd  Average Speed   Time    Time     Time  Current}
+      \CommentTok{\#\#                                  Dload  Upload   Total   Spent    Left  Speed}
+      \CommentTok{\#\#   0     0    0     0    0     0      0      0 {-}{-}:{-}{-}:{-}{-} {-}{-}:{-}{-}:{-}{-} {-}{-}:{-}{-}:{-}{-}     0100    39  100    39    0     0    272      0 {-}{-}:{-}{-}:{-}{-} {-}{-}:{-}{-}:{-}{-} {-}{-}:{-}{-}:{-}{-}   272}
+      \CommentTok{\#\# Anything added dilutes everything else.}
+\end{Highlighting}
+\end{Shaded}
+
+Add -s (silent)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{curl {-}s  https://api.github.com/zen}
+      \CommentTok{\#\# Anything added dilutes everything else.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+Info about user \texttt{defunkt}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{curl {-}s https://api.github.com/users/defunkt}
+      \CommentTok{\#\# \{}
+      \CommentTok{\#\#   "login": "defunkt",}
+      \CommentTok{\#\#   "id": 2,}
+      \CommentTok{\#\#   "node\_id": "MDQ6VXNlcjI=",}
+      \CommentTok{\#\#   "avatar\_url": "https://avatars.githubusercontent.com/u/2?v=4",}
+      \CommentTok{\#\#   "gravatar\_id": "",}
+      \CommentTok{\#\#   "url": "https://api.github.com/users/defunkt",}
+      \CommentTok{\#\#   "html\_url": "https://github.com/defunkt",}
+      \CommentTok{\#\#   "followers\_url": "https://api.github.com/users/defunkt/followers",}
+      \CommentTok{\#\#   "following\_url": "https://api.github.com/users/defunkt/following\{/other\_user\}",}
+      \CommentTok{\#\#   "gists\_url": "https://api.github.com/users/defunkt/gists\{/gist\_id\}",}
+      \CommentTok{\#\#   "starred\_url": "https://api.github.com/users/defunkt/starred\{/owner\}\{/repo\}",}
+      \CommentTok{\#\#   "subscriptions\_url": "https://api.github.com/users/defunkt/subscriptions",}
+      \CommentTok{\#\#   "organizations\_url": "https://api.github.com/users/defunkt/orgs",}
+      \CommentTok{\#\#   "repos\_url": "https://api.github.com/users/defunkt/repos",}
+      \CommentTok{\#\#   "events\_url": "https://api.github.com/users/defunkt/events\{/privacy\}",}
+      \CommentTok{\#\#   "received\_events\_url": "https://api.github.com/users/defunkt/received\_events",}
+      \CommentTok{\#\#   "type": "User",}
+      \CommentTok{\#\#   "site\_admin": false,}
+      \CommentTok{\#\#   "name": "Chris Wanstrath",}
+      \CommentTok{\#\#   "company": null,}
+      \CommentTok{\#\#   "blog": "http://chriswanstrath.com/",}
+      \CommentTok{\#\#   "location": null,}
+      \CommentTok{\#\#   "email": null,}
+      \CommentTok{\#\#   "hireable": null,}
+      \CommentTok{\#\#   "bio": "🍔",}
+      \CommentTok{\#\#   "twitter\_username": null,}
+      \CommentTok{\#\#   "public\_repos": 107,}
+      \CommentTok{\#\#   "public\_gists": 273,}
+      \CommentTok{\#\#   "followers": 21390,}
+      \CommentTok{\#\#   "following": 210,}
+      \CommentTok{\#\#   "created\_at": "2007{-}10{-}20T05:24:19Z",}
+      \CommentTok{\#\#   "updated\_at": "2022{-}02{-}09T18:00:53Z"}
+      \CommentTok{\#\# \}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{github-pat-to-authenticate}{%
+\paragraph{GITHUB PAT, to
+authenticate}\label{github-pat-to-authenticate}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{export} \OtherTok{token=$(}\NormalTok{Rscript {-}e }\StringTok{"cat(Sys.getenv(\textquotesingle{}GITHUB\_PAT\textquotesingle{}))"}\OtherTok{)}
+\NormalTok{curl {-}si {-}u jimrothstein:}\OtherTok{$token}\NormalTok{ https://api.github.com/users/octocat}
+      \CommentTok{\#\# This message is from  \textasciitilde{}/.Rprofile}
+      \CommentTok{\#\# HTTP/2 200 }
+      \CommentTok{\#\# server: GitHub.com}
+      \CommentTok{\#\# date: Tue, 01 Mar 2022 08:01:41 GMT}
+      \CommentTok{\#\# content{-}type: application/json; charset=utf{-}8}
+      \CommentTok{\#\# content{-}length: 1335}
+      \CommentTok{\#\# cache{-}control: private, max{-}age=60, s{-}maxage=60}
+      \CommentTok{\#\# vary: Accept, Authorization, Cookie, X{-}GitHub{-}OTP}
+      \CommentTok{\#\# etag: "e2dd2e72f45422dece5f816739e71c75732562e34ce85abfa6406fc98658c4ed"}
+      \CommentTok{\#\# last{-}modified: Tue, 22 Feb 2022 15:07:13 GMT}
+      \CommentTok{\#\# x{-}oauth{-}scopes: gist, notifications, read:discussion, read:org, read:packages, read:user, repo, user:email, user:follow, workflow}
+      \CommentTok{\#\# x{-}accepted{-}oauth{-}scopes: }
+      \CommentTok{\#\# x{-}github{-}media{-}type: github.v3; format=json}
+      \CommentTok{\#\# x{-}ratelimit{-}limit: 5000}
+      \CommentTok{\#\# x{-}ratelimit{-}remaining: 4986}
+      \CommentTok{\#\# x{-}ratelimit{-}reset: 1646121741}
+      \CommentTok{\#\# x{-}ratelimit{-}used: 14}
+      \CommentTok{\#\# x{-}ratelimit{-}resource: core}
+      \CommentTok{\#\# access{-}control{-}expose{-}headers: ETag, Link, Location, Retry{-}After, X{-}GitHub{-}OTP, X{-}RateLimit{-}Limit, X{-}RateLimit{-}Remaining, X{-}RateLimit{-}Used, X{-}RateLimit{-}Resource, X{-}RateLimit{-}Reset, X{-}OAuth{-}Scopes, X{-}Accepted{-}OAuth{-}Scopes, X{-}Poll{-}Interval, X{-}GitHub{-}Media{-}Type, X{-}GitHub{-}SSO, X{-}GitHub{-}Request{-}Id, Deprecation, Sunset}
+      \CommentTok{\#\# access{-}control{-}allow{-}origin: *}
+      \CommentTok{\#\# strict{-}transport{-}security: max{-}age=31536000; includeSubdomains; preload}
+      \CommentTok{\#\# x{-}frame{-}options: deny}
+      \CommentTok{\#\# x{-}content{-}type{-}options: nosniff}
+      \CommentTok{\#\# x{-}xss{-}protection: 0}
+      \CommentTok{\#\# referrer{-}policy: origin{-}when{-}cross{-}origin, strict{-}origin{-}when{-}cross{-}origin}
+      \CommentTok{\#\# content{-}security{-}policy: default{-}src \textquotesingle{}none\textquotesingle{}}
+      \CommentTok{\#\# vary: Accept{-}Encoding, Accept, X{-}Requested{-}With}
+      \CommentTok{\#\# x{-}github{-}request{-}id: BE7A:9A80:2348E4A:24FA9E0:621DD2E5}
+      \CommentTok{\#\# }
+      \CommentTok{\#\# \{}
+      \CommentTok{\#\#   "login": "octocat",}
+      \CommentTok{\#\#   "id": 583231,}
+      \CommentTok{\#\#   "node\_id": "MDQ6VXNlcjU4MzIzMQ==",}
+      \CommentTok{\#\#   "avatar\_url": "https://avatars.githubusercontent.com/u/583231?v=4",}
+      \CommentTok{\#\#   "gravatar\_id": "",}
+      \CommentTok{\#\#   "url": "https://api.github.com/users/octocat",}
+      \CommentTok{\#\#   "html\_url": "https://github.com/octocat",}
+      \CommentTok{\#\#   "followers\_url": "https://api.github.com/users/octocat/followers",}
+      \CommentTok{\#\#   "following\_url": "https://api.github.com/users/octocat/following\{/other\_user\}",}
+      \CommentTok{\#\#   "gists\_url": "https://api.github.com/users/octocat/gists\{/gist\_id\}",}
+      \CommentTok{\#\#   "starred\_url": "https://api.github.com/users/octocat/starred\{/owner\}\{/repo\}",}
+      \CommentTok{\#\#   "subscriptions\_url": "https://api.github.com/users/octocat/subscriptions",}
+      \CommentTok{\#\#   "organizations\_url": "https://api.github.com/users/octocat/orgs",}
+      \CommentTok{\#\#   "repos\_url": "https://api.github.com/users/octocat/repos",}
+      \CommentTok{\#\#   "events\_url": "https://api.github.com/users/octocat/events\{/privacy\}",}
+      \CommentTok{\#\#   "received\_events\_url": "https://api.github.com/users/octocat/received\_events",}
+      \CommentTok{\#\#   "type": "User",}
+      \CommentTok{\#\#   "site\_admin": false,}
+      \CommentTok{\#\#   "name": "The Octocat",}
+      \CommentTok{\#\#   "company": "@github",}
+      \CommentTok{\#\#   "blog": "https://github.blog",}
+      \CommentTok{\#\#   "location": "San Francisco",}
+      \CommentTok{\#\#   "email": "octocat@github.com",}
+      \CommentTok{\#\#   "hireable": null,}
+      \CommentTok{\#\#   "bio": null,}
+      \CommentTok{\#\#   "twitter\_username": null,}
+      \CommentTok{\#\#   "public\_repos": 8,}
+      \CommentTok{\#\#   "public\_gists": 8,}
+      \CommentTok{\#\#   "followers": 5049,}
+      \CommentTok{\#\#   "following": 9,}
+      \CommentTok{\#\#   "created\_at": "2011{-}01{-}25T18:44:36Z",}
+      \CommentTok{\#\#   "updated\_at": "2022{-}02{-}22T15:07:13Z"}
+      \CommentTok{\#\# \}}
+\end{Highlighting}
+\end{Shaded}
+
+Collaborators is private.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{export} \OtherTok{token=$(}\NormalTok{Rscript {-}e }\StringTok{"cat(Sys.getenv(\textquotesingle{}GITHUB\_PAT\textquotesingle{}))"}\OtherTok{)}
+\NormalTok{curl {-}s {-}u jimrothstein:}\OtherTok{$token}\NormalTok{ https://api.github.com/repos/jimrothstein/try\_things\_here/collaborators }
+      \CommentTok{\#\# This message is from  \textasciitilde{}/.Rprofile}
+      \CommentTok{\#\# [}
+      \CommentTok{\#\#   \{}
+      \CommentTok{\#\#     "login": "jimrothstein",}
+      \CommentTok{\#\#     "id": 8131839,}
+      \CommentTok{\#\#     "node\_id": "MDQ6VXNlcjgxMzE4Mzk=",}
+      \CommentTok{\#\#     "avatar\_url": "https://avatars.githubusercontent.com/u/8131839?v=4",}
+      \CommentTok{\#\#     "gravatar\_id": "",}
+      \CommentTok{\#\#     "url": "https://api.github.com/users/jimrothstein",}
+      \CommentTok{\#\#     "html\_url": "https://github.com/jimrothstein",}
+      \CommentTok{\#\#     "followers\_url": "https://api.github.com/users/jimrothstein/followers",}
+      \CommentTok{\#\#     "following\_url": "https://api.github.com/users/jimrothstein/following\{/other\_user\}",}
+      \CommentTok{\#\#     "gists\_url": "https://api.github.com/users/jimrothstein/gists\{/gist\_id\}",}
+      \CommentTok{\#\#     "starred\_url": "https://api.github.com/users/jimrothstein/starred\{/owner\}\{/repo\}",}
+      \CommentTok{\#\#     "subscriptions\_url": "https://api.github.com/users/jimrothstein/subscriptions",}
+      \CommentTok{\#\#     "organizations\_url": "https://api.github.com/users/jimrothstein/orgs",}
+      \CommentTok{\#\#     "repos\_url": "https://api.github.com/users/jimrothstein/repos",}
+      \CommentTok{\#\#     "events\_url": "https://api.github.com/users/jimrothstein/events\{/privacy\}",}
+      \CommentTok{\#\#     "received\_events\_url": "https://api.github.com/users/jimrothstein/received\_events",}
+      \CommentTok{\#\#     "type": "User",}
+      \CommentTok{\#\#     "site\_admin": false,}
+      \CommentTok{\#\#     "permissions": \{}
+      \CommentTok{\#\#       "admin": true,}
+      \CommentTok{\#\#       "maintain": true,}
+      \CommentTok{\#\#       "push": true,}
+      \CommentTok{\#\#       "triage": true,}
+      \CommentTok{\#\#       "pull": true}
+      \CommentTok{\#\#     \},}
+      \CommentTok{\#\#     "role\_name": "admin"}
+      \CommentTok{\#\#   \}}
+      \CommentTok{\#\# ]}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{github-pat-walk-through}{%
+\paragraph{GITHUB PAT, walk-through}\label{github-pat-walk-through}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# knitr::knit\_exit()}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{creating-apis.}{%
+\subsubsection{Creating APIs.}\label{creating-apis.}}
+
+\hypertarget{how-to-write-an-api-openapi}{%
+\paragraph{\texorpdfstring{How to \emph{WRITE} an API:
+openAPI}{How to WRITE an API: openAPI}}\label{how-to-write-an-api-openapi}}
+
+\hypertarget{attempt-to-simplify-and-standardize-how-the-developer-determines-the-api-structure.}{%
+\paragraph{Attempt to simplify and standardize how the developer
+determines the API
+structure.}\label{attempt-to-simplify-and-standardize-how-the-developer-determines-the-api-structure.}}
+
+\url{https://oai.github.io/Documentation/start-here.html}
+
+\begin{verbatim}
+The OAS defines a standard, programming language-agnostic interface description for REST APIs, which allows both humans and computers to discover and understand the capabilities of a service without requiring access to source code, additional documentation, or inspection of network traffic. When properly defined via OAS, a consumer can understand and interact with the remote service with a minimal amount of implementation logic. Similar to what interface descriptions have done for lower-level programming, the OAS removes guesswork in calling a service.
+\end{verbatim}
+
+\hypertarget{r-plumber-package-sets-up-local-server-to-create-apis.}{%
+\subsubsection{R Plumber package sets up local server to create
+APIs.}\label{r-plumber-package-sets-up-local-server-to-create-apis.}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\SpecialCharTok{::}\FunctionTok{knit\_exit}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}

@@ -1,0 +1,28 @@
+# =======================================================
+####    SHELL environment variables base on ~/.Renviron
+# =======================================================
+# file <- "057_curl_currency.txt"
+# BASE:
+
+
+
+
+echo $token
+
+curl -s -i --header "Accept: application/json" -G -d 'symbols=RUB' -d 'prettyprint=true' "app_id=$token" https://docs.openexchangerates.org/docs/latest-json -I -L --trace-ascii request.txt
+
+
+
+
+
+
+
+
+
+
+
+
+# ==================
+# WORKS in Browser
+# ==================
+

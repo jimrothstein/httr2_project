@@ -1,0 +1,35 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+#output:  
+#    pdf_document:
+#      latex_engine:  lualatex  
+#output:  html_document
+output:
+    beamer_presentation:
+        latex_engine: lualatex
+fontsize:  8pt
+---
+
+## What are APIs?
+
+## What problems does it solve?
+    -   secure messaging between two computers
+    -   allow 3rd party access to data, but with restrictions
+    -   allow us to logon using information from a 3rd (Use Google) 
+    -   update data, such as add a new video to Youtube.
+    -   allows devices running different software to communicate.
+
+##  Restful APIs refers to specfic documentation and rules:   
+    -   Consider a ball, any ball suitable for kicking.   
+    -   The game of soccer and its rules would be `Restful API`.
+
+---
+
+
+
+
+
+
+

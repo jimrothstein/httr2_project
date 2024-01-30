@@ -1,0 +1,125 @@
+---
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), ' %d %B %Y'))`"
+output:   
+  html_document:  
+        code_folding: show
+        toc: true 
+        toc_depth: 4
+        toc_float: true
+        mathjax: default
+  pdf_document:   
+    latex_engine: lualatex  
+    toc: true
+    toc_depth:  4   
+    keep_tex:  true
+    keep_md:   true
+  header-includes:  
+    -  \usepackage{helvet}  
+    -  \renewcommand{\familydefault}{\sfdefault}  
+    -  \usepackage{ulem}
+fontsize: 10pt   
+geometry: margin=0.4in,top=0.25in   
+TAGS:  skeleton
+---
+~/code/MASTER_INDEX.md
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      tidy = "styler",
+                      error = TRUE,
+                      collapse = T   ) # T easier to read
+```
+
+```{r library 		}
+library(jimTools)
+library(gargle)
+``` 
+<!-- new way to set CHUNK OPTIONS -->
+```{r cars-plot, include=F,  eval=F}
+#| echo = FALSE,
+#| message = FALSE,
+#| fig.width = 6, 
+#| fig.height = 6,
+#| fig.path = "figures/",
+#| fig.caption = "This is a long caption that fits better inside of a code chunk",
+#| fig.alt = "This is a long description that conveys the meaning of the visual."
+
+library(ggplot2)
+```
+
+####    First try
+```{r first}
+#| echo = FALSE
+#| eval = T
+
+
+
+### 2 quetions:  ok to cache in ~/.config/... |  then usual Google auth screen
+###     
+token <- token_fetch()
+token
+```
+
+####    copy gargle code, however, I replaced THEIR API demo key with one for
+gargle and this project.
+```{r}
+req <- request_build(
+  method = "GET",
+  path = "webfonts/v1/webfonts",
+  params = list(
+    sort = "popularity"
+  ),
+  # This is their demo key
+  # key = gargle_api_key(),
+
+  ## this my API key, specifically for Gargle and Web Fonts 
+  key = Sys.getenv("API_GARGLE_WEB_FONTS"),
+
+  base_url = "https://www.googleapis.com"
+)
+req
+resp <- request_make(req)
+out <- response_process(resp)
+
+out <- out[["items"]][1:8]
+sort(vapply(out, function(x) x[["family"]], character(1)))
+```
+
+
+```{r render, eval=FALSE, include=FALSE 	} 
+output_dir  <- Sys.getenv("OUTPUT_DIR")
+output_dir
+
+{
+# get file
+file <- "/home/jim/.config/nvim/templates/skeleton.Rmd"
+file  <- normalizePath(file)
+file
+
+
+## Ref only
+    # the_dir  <- dirname(file)
+    # file  <- basename(file)
+    # file  <- file.path(the_dir, file)
+
+}
+
+rmarkdown::render(file,
+#                  output_format="html_document",
+                    output_format="pdf_document",
+                    intermediates_dir='./tmp',
+                    clean = F,              # leave tmp files
+                    output_dir=output_dir
+                  )
+```
+
+#### html ONLY (fonts)
+```{r, results = 'asis',echo = F}
+htmltools::h3("Test big font")
+htmltools::h4('Test medium font')
+htmltools::h5('Test smaller font')
+```
+`r htmltools::h3("Outside chunck")`

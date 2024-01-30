@@ -1,0 +1,217 @@
+---
+title: Template for .Rmd
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc:  TRUE
+    toc_depth:  1
+fontsize: 10pt
+geometry: margin=0.4in,top=0.25in
+#  md_document:
+#  html_document:
+#    toc: true
+#  	toc_float: true
+#    css: styles.css
+---
+
+
+---- PURPOSE ----
+given a channel_id , return list of all playlists and save to data/
+
+----------------
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = F,  
+											comment="      ##",  
+											error=TRUE, 
+                      include=F,
+											collapse=TRUE)
+load_all()
+```
+```{r initialize}
+
+## initialize takes no args, returns list of params good for entire file
+global_params <- initialize()
+global_params
+```
+
+
+```{r query}
+#----------------
+## For playlists, Google wants:
+#----------------
+{
+    base_url <- "https://www.googleapis.com/youtube/v3/playlists"
+    part  <-  "snippet"
+    fields=paste(sep=",", 
+                   "nextPageToken",
+                  "items(id,snippet(title,description,publishedAt))"
+                  )
+    class  <- "playlists"
+
+    query_params  <- query_params(url = base_url, part = part, fields = fields,
+                                  class = class)
+    query_params
+}
+
+```
+
+### Assemble query for GET
+```{r unpack}
+## from global_params
+
+    api  <- global_params$api 
+    key  <- api$api_key
+    config  <-  global_params$config
+
+
+## from query_params
+    {
+    url  <- query_params$url
+    part  <- query_params$part
+    fields  <- query_params$fields
+    defaults  <- query_params$defaults
+    channelId  <- defaults$channelId
+    # videoId  <- defaults$videoId
+    #playlistId  <- defaults$playlistId
+    maxResults  <- defaults$maxResults
+    key  <- api$api_key
+}
+
+## last chance to change video/playlist
+# spare:
+# videoId  <- "Mec9sw1cJk8"  # carter
+#playlistId  <- "PLbcglKxZP5PMZ7afIT7E2o9NwQIzqTI5l"
+
+    query  <- list( part = part,
+                   channelId = channelId ,
+                   maxResults = maxResults,
+                   fields = fields,
+                   url = url,
+                   key = key,
+                   pageToken = NULL)
+
+    query
+```
+
+## HELPER:
+
+*  Helper function: 
+*  get_batch, default for pageToken is NULL
+
+
+```{r get_batch}
+
+get_batch  <- function(url = NULL,  query = NULL, config=NULL) {
+  res <- httr::GET(url = url, query = query, config= config ) %>% 
+  httr::stop_for_status()
+}
+```
+From r, process playlists
+  *  Helper function
+  *  For each batch, extract the playlistId and playlists
+  *  Then rbind to existing playlists
+*   
+
+```{r process_comments}
+process_playlists  <- function(r, playlists = tibble::tibble()) {
+  json_content <- get_json(r)
+  next_playlists <- cbind(playlistId =json_content$items$id,
+                          json_content$items$snippet)
+  next_playlists <- tibble::as_tibble(next_playlists)
+  playlists <- rbind(playlists, next_playlists)
+}
+```
+
+
+## get_batch()
+SCOPE?  auth_token?   Something fails with auth token
+# expect > 100 playlists
+
+##   Obtain first batch (~50) and put into tibble playlists
+```{r first_batch }
+r  <- get_batch(url = url, query = query, config = config)
+playlists  <- process_playlists(r)
+playlists
+
+```
+
+## if more batches ...
+```{r}
+httr::content(r)$nextPageToken
+
+while ( !is.null(httr::content(r)$nextPageToken )) {
+  query$pageToken  <- httr::content(r)$nextPageToken
+	r  <- get_batch(url = url, query = query, config = config)
+	playlists  <- process_playlists(r, playlists)
+
+} # end loop
+playlists
+```
+
+### save playlists
+##  BE SURE data/ exists!
+```{r}
+saveRDS(playlists, file=here("data", "playlists.RDS"))
+```
+
+### read playlists
+```{r readRDS}
+x  <- readRDS(here("data", "playlists.RDS"))
+x
+```
+
+
+### pretty the date.  
+```{r}
+# google stores dates as ISO 8601, as string
+# why need TWO lubridate commands to retrieve simple date?
+playlists <- playlists %>% 
+	dplyr::mutate(date= lubridate::as_date(
+									lubridate::as_datetime(publishedAt))) %>% 
+	dplyr::select(-c(publishedAt))
+
+playlists
+# example playlistId  
+playlists$playlistId[[2]]
+```
+
+### Move to DT
+```{r DT}
+library(data.table)
+dt  <- as.data.table(playlists)
+dt
+
+library(knitr)
+dt %>% knitr::kable()
+saveRDS(dt, file=here("data", "dt_playlists.RDS"))
+x  <- readRDS(here("data", "dt_playlists.RDS"))
+identical(dt,x)
+x %>% knitr::kable()
+
+```
+
+```{r show, echo=T, include=T}
+
+dt %>% knitr::kable()
+```
+
+
+
+```{r}
+print(playlists[,2:4], n=200)
+```
+
+```{r render, include=F, eval=F}
+{
+file <- "/home/jim/code/youtube_api/rmd/021_LIST_all_playlists.Rmd"
+file  <- here("rmd", basename(file))
+file
+}
+
+
+rmarkdown::render(file,
+                  #output_format="html_document")
+                  output_format="pdf_document")
+
+```
+

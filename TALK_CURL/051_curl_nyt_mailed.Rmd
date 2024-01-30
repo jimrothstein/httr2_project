@@ -1,0 +1,38 @@
+
+<!--
+
+file <- "051_curl_nyt_mailed.Rmd"
+
+-->
+
+
+### NYT:  Most popular articles (emaled)
+```
+https://developer.nytimes.com/apis
+
+https://api.nytimes.com/svc/mostpopular/v2/emailed/{period}.json
+
+```
+
+
+```
+#   nyt_app_id
+#   nyt_secret
+#   nyt_key
+#
+
+
+```{zsh}
+export nyt_key=$(Rscript -e "cat(Sys.getenv('nyt_key'))")
+endpoint=https://api.nytimes.com/svc/mostpopular/v2/emailed/1.json
+curl -s -d "api-key=$nyt_key" -G $endpoint
+```
+
+
+
+
+
+
+
+
+

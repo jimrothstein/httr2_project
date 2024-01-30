@@ -1,0 +1,52 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+output:
+    beamer_presentation:
+        latex_engine: lualatex
+fontsize:  8pt
+---
+
+
+
+-   List of youtube videos in my Documentaries playlist
+ 
+"000_httr_youtube_playlist_TALK.pdf"
+
+    [documentaries](000_httr_youtube_playlist_TALK.pdf)
+
+<!--
+
+{r videos, child=c("/home/jim/code/youtube_api/httr2_pkg/000_httr_youtube_playlist_TALK.Rmd")}
+
+-->
+
+---
+
+-   Check politican's donors
+
+
+---   
+-   Create Github Gist
+
+To obtain my gists (only)
+```{zsh}
+export token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+
+curl -s \
+  -H "Authorization: token $token" \
+  -H "Accept: application/vnd.github.v3+json" \
+  https://api.github.com/gists
+```
+
+```{r render88, include=F, eval=F}
+{
+file <- "slide_restful_examples.Rmd"
+file  <- normalizePath(file)
+file
+}
+rmarkdown::render(file)
+rmarkdown::render(file, output_dir="~/Downloads/print_and_delete")
+```
+

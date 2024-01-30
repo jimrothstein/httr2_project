@@ -1,0 +1,23 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+output:
+    beamer_presentation:
+        latex_engine: lualatex
+fontsize:  8pt
+---
+
+
+
+
+```{r render23, include=F, eval=F}
+{
+file <- "slide_SKELETON.Rmd"
+file  <- normalizePath(file)
+file
+}
+rmarkdown::render(file)
+rmarkdown::render(file, output_dir="~/Downloads/print_and_delete")
+```
+

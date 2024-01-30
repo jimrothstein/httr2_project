@@ -1,0 +1,37 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+#output:  
+#    pdf_document:
+#      latex_engine:  lualatex  
+#output:  html_document
+output:
+    beamer_presentation:
+        latex_engine: lualatex
+fontsize:  8pt
+---
+\tiny
+
+
+
+##   First, understand some of the models
+
+-   HTTP messages, GET, POST
+-   headers, body, URI  
+
+-   Diagram:  HTTP
+
+-   Tools:   curl, Postman and many others
+
+-   EXAMPLES:  Using CURL
+-   https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api
+
+
+<!-- why hook not working? -->
+
+```{zsh}
+curl -s https://api.github.com/zen
+```
+
+

@@ -1,0 +1,171 @@
+---
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), ' %d %B %Y'))`"
+output:   
+  html_document:  
+        code_folding: show
+        toc: true 
+        toc_depth: 2
+        toc_float: true
+        mathjax: default
+  pdf_document:   
+    latex_engine: xelatex  
+    toc: true
+    toc_depth:  2   
+fontsize: 11pt   
+geometry: margin=0.4in,top=0.25in   
+---
+
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE   ) # easier to read
+library(httr)
+getwd()
+```
+
+### GoogleSheets, orginal code, has excellent documentation; examples,
+functions to get to know tokens.
+[jennybc googlesheets](/home/jim/code/googlesheets/)
+
+```{r token_available}
+token_available <- function(verbose = TRUE) {
+
+  if (is.null(.state$token)) {
+    if (verbose) {
+      if (file.exists(".httr-oauth")) {
+        message("A .httr-oauth file exists in current working ",
+                "directory.\nWhen/if needed, the credentials cached in ",
+                ".httr-oauth will be used for this session.\nOr run gs_auth() ",
+                "for explicit authentication and authorization.")
+      } else {
+        message("No .httr-oauth file exists in current working directory.\n",
+                "When/if needed, 'googlesheets' will initiate authentication ",
+                "and authorization.\nOr run gs_auth() to trigger this ",
+                "explicitly.")
+      }
+    }
+    return(FALSE)
+  }
+
+  TRUE
+
+}
+
+# .state is safe env to keep token object while we use it
+.state  <- env(.parent = empty_env())
+token_available()
+
+
+
+```
+```{r}
+getwd()
+.state$token
+.state$token  <- readRDS(".httr-oauth")
+.state$token
+
+
+# actually have multiple tokens!
+length(ttt)
+ttt[1]
+ttt[2]
+```
+
+# is token good?
+```{r}
+if (inherits(ttt[3], "Token2.0")) message("yes")
+
+# Look at credentials for one of the 3 tokens; unlist so can check each element
+y  <- unlist(ttt$d55165fda9c3cb899c2c1f10c7c07305$credentials)
+is.character(y) #T
+
+length(y)
+# [1] 6
+
+y[1]
+y[2]
+y[3]
+y[4]
+y[5]
+y[6]
+
+```
+
+
+\newpage
+
+
+```{r skeleton}
+file="/home/jim/.config/nvim/templates/skeleton.Rmd"
+```
+
+```{r render, eval=FALSE, include=FALSE 	} 
+# TODO:  file is found when knitr runs (see above)
+
+# file must be of form:
+# dir/name_of_this_file    where dir is relative to project root
+
+## In doubt?   USE  knitr and do not waste time!
+
+## Want to embed Latex, stick to pdf output (html?   never sure!)
+
+# NOTE:   .tex only works with PDF
+# NOTE:    tex will NOT work with html
+# NOTE:    md_document is considered HTML, and latex commands may fail.
+# in general, pdf will look nicer
+
+
+## GOOD PRACTICE:
+#  Refer to files relative to project root, which should remain as working dir.
+#  So why using `here` ?
+
+{
+file  <- "" 
+file  <- basename(file)
+file  <- here("rmd", file)
+file
+}
+
+
+## Want github to display nicely rendered output?
+##  *  include md_format
+#   *  include output_dir = "out"
+#   *  if .gitignore balks,  then add !out/**   to close .github
+
+rmarkdown::render(file,
+    #output_format = "pdf_document",
+    #output_format = "html_document",
+    output_format=c("html_document", "md_document"),
+    #output_dir = "out",
+    output_file = "out")
+
+# ==========================================
+#  Example 1:  pdf| same name as source file | in wd |
+# ==========================================
+
+rmarkdown::render(file,
+    output_format = "pdf_document")
+
+# ============================================================
+#  Example 2:  pdf | same name as source file | in pdf/|
+# ============================================================
+# pdf/  will be created
+
+if (knitr::is_latex_output())  (
+rmarkdown::render(file
+    output_format = c("pdf_document") ,
+    output_dir = "pdf")
+)
+
+if (knitr::is_html_output()) (
+
+rmarkdown::render(file,
+    output_format = c("html_document", "md_document"), 
+    output_dir = "html")
+
+)
+```

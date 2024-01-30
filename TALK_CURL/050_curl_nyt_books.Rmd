@@ -1,0 +1,59 @@
+
+<!--
+
+#   file <- 050_curl_nyt_books.Rmd
+
+
+Example:   NY Times Books
+-->
+
+
+In Browser, but exposes key
+```
+https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=XK..snip
+```
+
+```
+#   nyt_app_id
+#   nyt_secret
+#   nyt_key
+#
+https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=yourkey
+
+endpoint https:://api.nytimes.com/svc/books/v3/
+## append , one of 
+##  lists.json
+##  reviews.json
+##  lists/{}.json several possibilities
+```
+
+####    Curl, without exposing key
+```{zsh}
+export nyt_key=$(Rscript -e "cat(Sys.getenv('nyt_key'))")
+
+curl -s "https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=$nyt_key" | json_pp -f json -t json -json_opt pretty
+
+```
+
+
+
+#### Sometimes easier to put together url in pieces, -d (data) addes as query
+params
+```{ zsh}
+curl -s -i  -d 'list=hardcover-fiction' -d "api-key=$nyt_key" -G https://api.nytimes.com/svc/books/v3/lists.json
+```
+
+#### Using -o nyt saves body(paylist) to file
+```{zsh}
+
+curl -s -i -o nyt -d 'list=hardcover-fiction' -d "api-key=$nyt_key" -G https://api.nytimes.com/svc/books/v3/lists.json
+
+cat nyt
+```
+
+
+
+
+
+
+

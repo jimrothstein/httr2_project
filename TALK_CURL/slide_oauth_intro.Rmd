@@ -1,0 +1,23 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+#output:  
+#    pdf_document:
+#      latex_engine:  lualatex  
+#output:  html_document
+output:
+    beamer_presentation:
+        latex_engine: lualatex
+fontsize:  8pt
+---
+
+
+-   OAUTH2
+
+
+
+
+
+
+

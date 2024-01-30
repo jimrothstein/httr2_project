@@ -1,0 +1,92 @@
+---
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), ' %d %B %Y'))`"
+output:   
+  html_document:  
+        code_folding: show
+        toc: true 
+        toc_depth: 2
+        toc_float: true
+  pdf_document:   
+    latex_engine: xelatex  
+    toc: true
+    toc_depth:  2   
+    fontsize: 11pt   
+    geometry: margin=0.5in,top=0.25in   
+---
+
+---- PURPOSE ----
+|  
+----------------
+
+
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment="      ##",  
+                      error=TRUE, 
+                      collapse=TRUE)
+load_all()
+library(httr)
+```
+
+```
+To construct GET, need url and config.
+Config holds headers, user_agent, token, etc.
+
+```
+
+```{r build_request}
+
+.base_url  <- "http://httpbin.org" 
+.url  <- "http://httpbin.org/get"
+
+# compare , 2nd is what we want
+httr::GET(url = .base_url)
+httr::GET(url = .base_url, path="/get")
+
+
+# add header do this:
+httr::GET (url = .url, add_headers(name = "jim")) 
+
+
+
+# verbose?  
+args(httr::verbose)
+# function (data_out = TRUE, data_in = FALSE, info = FALSE, ssl = FALSE) 
+
+# To Review request
+httr::GET (url = .url, add_headers(name = "jim"), verbose(data_in=T), token=NULL) 
+
+# query? use named list
+httr::GET (url = .url, add_headers(name = "jim"), query = list(x="one", y="two") )
+
+
+
+# NOT recommended: httr::config()
+#
+# INSTEAD:
+.config  <- httr::add_headers(name="jim")
+.config
+
+## WORKS
+httr::GET(url=.url, config=.config) 
+httr::GET(url=.url, httr::add_headers(name="jim"))
+httr::GET(url=.url, config = list(headers = c(name="jim")))
+
+
+## does not WORK
+httr::GET(url=.url, config = list(headers = httr::add_headers(name="jim")))
+
+
+## ERRORs
+httr::GET(url=.url, config=httr::add_headers(name="jim"))
+httr::GET(url=.url, config=httr::config(header = httr::add_headers(name="jim")))
+
+```
+
+
+
+
+

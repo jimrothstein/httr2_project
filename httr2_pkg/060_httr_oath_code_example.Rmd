@@ -1,0 +1,214 @@
+--- 
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  html_document:
+        code_folding: show
+        toc: true 
+        toc_depth: 4
+        toc_float: true
+        mathjax: default
+  pdf_document:   
+    latex_engine: lualatex  
+    toc: true
+    toc_depth:  4   
+    keep_tex:  true  
+    keep_md:   true  
+  header-includes:  
+    -  \usepackage{helvet}  
+    -  \renewcommand{\familydefault}{\sfdefault}  
+    -  \usepackage{ulem}
+fontsize: 10pt   
+geometry: margin=0.4in,top=0.25in   
+TAGS:  httr2,
+---
+
+
+Copied from vignette
+https://httr2.r-lib.org/articles/httr2.html
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE)
+library(httr2)
+load_all()
+```
+
+Does what? returns a modified req, not a token?
+```{r}
+
+client <- oauth_client(
+  id = "28acfec0674bb3da9f38",
+  secret = obfuscated(paste0(
+     "J9iiGmyelHltyxqrHXW41ZZPZamyUNxSX1_uKnv",
+     "PeinhhxET_7FfUs2X0LLKotXY2bpgOMoHRCo"
+  )),
+  token_url = "https://github.com/login/oauth/access_token",
+  name = "hadley-oauth-test"
+)
+
+req  <- request("https://api.github.com/user") %>%
+  req_oauth_auth_code(client, auth_url = "https://github.com/login/oauth/authorize")
+
+req  |> req_auth_bearer_token() 
+#> <httr2_request>
+#> GET https://api.github.com/user
+#> Body: empty
+#> Policies:
+#> • auth_oauth: a list
+```
+```{r setup}
+nyt_key  <- Sys.getenv("nyt_key")
+
+nyt_secret  <- Sys.getenv("nyt_secret")
+
+resp <- request("https://api.nytimes.com/svc/books/v3") %>% 
+  req_url_path_append("/reviews.json") %>% 
+  req_url_query(`api-key` = nyt_key, isbn = 9780307476463) %>% 
+  req_perform()
+resp
+
+
+##  Examine body
+    resp %>% 
+    resp_body_json() %>% 
+    str()
+  
+ ```
+
+#### Suppose error, 401 unauthorized
+```{r error}
+
+resp <- request("https://api.nytimes.com/svc/books/v3") %>% 
+  req_url_path_append("/reviews.json") %>% 
+  req_url_query(`api-key` = "invalid", isbn = 9780307476463) %>% 
+  req_perform()
+
+last_request()
+
+last_response()
+last_response() |> resp_body_json()
+
+
+##  New way to crawl JSON
+    last_response() %>% resp_body_json() %>% .$fault
+    last_response() %>% resp_body_json() %>% .$fault %>% .$faultstring
+
+## |> does not support !
+    last_response() |> resp_body_json() |> .$fault
+```
+
+```{r}
+```
+
+####    LEGACY
+#### show HEADERS
+
+```{r setup_details}
+
+##  replace httr2:: function with wrapper.  Makes default to NOT redact.
+
+req_dry_run  <- function(..., redact_headers=F) {
+    httr2::req_dry_run(..., redact_headers=redact_headers)
+}
+
+##  SET/GET
+Sys.setenv(FAKE="joke")
+Sys.getenv("FAKE")
+
+system("echo hi")   
+system2("v=FAKE")
+```
+
+
+#### git should NOT pick this up
+```{r}
+
+writeLines(text = "FOO", con = "_secret_file") 
+readLines("_secret_file")
+
+```
+
+#### read API codes from ~/.Renviron and save to local file that git ignores
+```{r}
+## github token, for GIST only
+
+HTTR2_GIST  <- Sys.getenv("HTTR2_GIST")
+HTTR2_GIST
+writeLines(text = paste0("HTTR2_GIST=", HTTR2_GIST), con= " _HTTR2_GIST")
+token  <- HTTR2_GIST
+```
+
+
+###   Follow Vignette for OAUTH and GITHUB 
+
+####    Authenication
+```{r begin}
+
+##  This is Hadley's client/  I can't recreate my own:  what is URL??
+
+client <- oauth_client(
+  id = "28acfec0674bb3da9f38",
+  secret = obfuscated("J9iiGmyelHltyxqrHXW41ZZPZamyUNxSX1_uKnvPeinhhxET_7FfUs2X0LLKotXY2bpgOMoHRCo"),
+  token_url = "https://github.com/login/oauth/access_token",
+  name = "hadley-oauth-test"
+)
+
+
+client
+
+##  github window pops up to authorizee 
+token <- oauth_flow_auth_code(client, auth_url = "https://github.com/login/oauth/authorize")
+
+# has no scope!
+token
+```
+
+
+####    access token, using req_oauth_code
+```{r}
+# First, he says do htis and it prints "jim"
+
+request("https://api.github.com/user") %>% 
+  req_auth_bearer_token(token$access_token) %>% 
+  req_perform() %>% 
+  resp_body_json() %>%
+  .$name
+# 
+# Then he says this is better, which prints stuff about me.
+request("https://api.github.com/user") %>% 
+  req_oauth_auth_code(client, auth_url = "https://github.com/login/oauth/authorize") %>% 
+  req_perform() %>% 
+  resp_body_json()
+
+
+  ## find cached tokens?
+rappdirs::user_cache_dir("httr2")
+# [1] "/home/jim/.config/cache/httr2"
+
+dir(rappdirs::user_cache_dir("httr2"), recursive = TRUE)
+# character(0)
+```
+
+
+### ================================================
+###     oauth_flow_device - from Hadley - says fails
+### ================================================
+```{r}
+library(httr2)
+
+client <- oauth_client(
+  id = "Iv1.73a8cd0fc360044f",
+  secret = obfuscated("G8mAhZD5SVZKf0dEkrTA33xf6ImWrhIfTrRuZzb9JxH87ec8LglCilQGdbonyS1f6oI-ytqxOCk"),
+  token_url = "https://github.com/login/oauth/access_token",
+  name = "github_app"
+)
+
+client
+token <- oauth_flow_device(client, auth_url = "https://github.com/login/device/code")
+```
+
+
+

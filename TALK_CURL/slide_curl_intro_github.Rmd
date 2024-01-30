@@ -1,0 +1,139 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+output:
+    beamer_presentation:
+        latex_engine: lualatex
+fontsize:  8pt
+---
+
+
+#### http://httpbin.org Good for practice
+```{zsh}
+curl -s http://httpbin.org | head -n 10
+```
+
+Headers Only
+```{zsh}
+curl -Is http://httpbin.org 
+curl -Is example.com
+```
+
+
+```{zsh}
+curl -sI -G -d "name=jim" http://httpbin.org -o /dev/null
+```
+
+
+### API & GITHUB
+
+ REFERENCE:
+ https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api
+
+
+```{zsh}
+curl https://api.github.com/zen
+```
+
+
+Add -s (silent) 
+```{zsh}
+curl -s  https://api.github.com/zen
+```
+
+---
+
+Info about user `defunkt`
+
+```{zsh}
+curl -s https://api.github.com/users/defunkt
+```
+
+####  GITHUB PAT, to authenticate
+
+```{zsh}
+export token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+curl -si -u jimrothstein:$token https://api.github.com/users/octocat
+```
+
+Collaborators is private.
+```{zsh}
+export token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+curl -s -u jimrothstein:$token https://api.github.com/repos/jimrothstein/try_things_here/collaborators 
+```
+
+
+#### GITHUB PAT, walk-through
+
+
+```{r end99}
+# knitr::knit_exit()
+```
+<!--
+
+# 
+#   TO include HEADERS
+# curl -i https://api.github.com/users/defunkt
+#
+#   TO see HEADERS Only:
+# curl --head https://api.github.com/users/defunkt
+#
+#
+# ======================
+#       AUTHENTICATION
+# ======================
+#
+#   Asks for username (anything seems ok)
+# curl -i -u your_username https://api.github.com/users/octocat
+#
+# WORKS
+#  (updated 20FEB22)
+#   To retrieve my Github_PAT (stored in ~/.Renviron) and put into zsh shell
+#   token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+#   echo $token
+#
+#   # note `x-ratelimit-limit: 5000`
+#  curl -si -u jimrothstein:$token https://api.github.com/users/octocat
+#  
+#
+#
+#   To get info about me (if authenticated)
+# curl -i -u jimrothstein:$token https://api.github.com/users/user
+# curl -i -u jimrothstein:$token https://api.github.com/users/jimrothsein
+# =========================================================================
+#
+# WORKS!
+endpoint=/status
+curl ${base}${endpoint}
+#
+# exit
+
+
+# ===============================================================================
+#  `Contributors` is public
+#  But `collobrators` is private
+# ===============================================================================
+#   
+# curl -s https://api.github.com/repos/google/go-github/contributors | head -40
+# curl -s https://api.github.com/repos/jimrothstein/try_things_here/contributors | head -40 
+#
+# ===============================================================================
+# `Colloboraters` (project manger) is privid and requires authorization.
+# FAILS
+# curl -s  https://api.github.com/repos/jimrothstein/try_things_here/collaborators 
+#
+#
+#  WORKS   
+## curl -s -u jimrothstein:$token https://api.github.com/repos/jimrothstein/try_things_here/collaborators 
+# ===============================================================================
+
+-->
+
+```{r render23, include=F, eval=F}
+file <- "slide_curl_intro_github.Rmd"
+file  <- normalizePath(file)
+file
+rmarkdown::render(file, output_dir="~/Downloads/print_and_delete")
+```
+

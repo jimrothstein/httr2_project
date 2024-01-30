@@ -1,0 +1,56 @@
+---
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), ' %d %B %Y'))`"
+output:   
+  html_document:  
+        code_folding: show
+        toc: true 
+        toc_depth: 2
+        toc_float: true
+  pdf_document:   
+    latex_engine: xelatex  
+    toc: true
+    toc_depth:  2   
+    fontsize: 11pt   
+    geometry: margin=0.5in,top=0.25in   
+---
+
+
+###  PLACE HOLDER
+
+
+---- PURPOSE ----
+given ALL playlists, return complete list of videos
+----------------
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,  
+											comment="      ##",  
+											error=TRUE, 
+											collapse=TRUE)
+load_all()
+```
+
+
+Retrieve previously stored playlists (see rmd/011_ ...)
+
+### read playlists (previously downloaded)
+```{r readRDS}
+x  <- readRDS(here("data", "playlists.RDS"))
+x
+```
+
+```{r begin}
+if (!exists("api")) api <- get_api_codes()
+if (!exists("l")) l  <- get_typical_values()
+base_url <- "https://www.googleapis.com/youtube/v3/playlistItems"
+```
+
+
+Auth_code
+```{r get_auth_code}
+old  <- auth.code
+auth.code  <- getOption("auth.code")
+auth.code
+```

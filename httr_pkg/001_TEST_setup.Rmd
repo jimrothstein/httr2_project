@@ -1,0 +1,53 @@
+--- 
+title: Template for .Rmd 
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+toc: TRUE 
+toc_depth:  1 
+fontsize: 12pt 
+geometry: margin=0.5in,top=0.25in 
+---
+
+## TEST the token
+  *  No token? return to prior file
+```{r one_video}
+
+# prep for GET
+if (!exists("api")) api <- get_api_codes()
+
+l <- get_typical_values()
+maxResults  <- l$maxResults
+playlistId  <- l$playlistId
+video_id = l$videoId
+base_url <- "https://www.googleapis.com/youtube/v3/videos"
+
+
+api_opts <- list(part = "snippet",
+                 id = video_id,
+                 maxResults = maxResults,
+                 fields="items(snippet(title))",
+                 key = api$api_key)
+
+
+# what is this?
+httr::modify_url(
+                       base_url, 
+                       query = api_opts, 
+                       httr::config(token = auth.code))
+
+# WORKS!!!!
+r  <- httr::GET(base_url, query = api_opts, httr::config(token= auth.code))
+r
+r  <- httr::GET(base_url, query = api_opts)
+r
+stop_for_status(r)
+httr::content(r)
+str(httr::content(r))
+```
+
+STOP HERE
+more examples, see 00070 or other files
+

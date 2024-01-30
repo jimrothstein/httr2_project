@@ -1,0 +1,7 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.httr-oauth$
+^LICENSE\.md$
+^\.Rbuildignore$
+pdf/
+rmd/

@@ -1,0 +1,123 @@
+--- 
+title: Template for .Rmd 
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+toc: TRUE 
+toc_depth:  1 
+fontsize: 12pt 
+geometry: margin=0.5in,top=0.25in 
+TAGS:  httr,
+---
+
+
+#### PURPOSE:  setup and use Google API key (without auoth2) in R
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE)
+load_all()
+
+library("ggmap")
+```
+
+```{r secrets}
+# keep secret, stored in ~/.Renviron
+the_key  <- Sys.getenv("API_KEY_MAPS")
+
+# from github issues page, do this:
+options(ggmap = list(google = list(second_limit = 50L,
+                                  day_limit = 2500)))
+ggmap::register_google(key=the_key)
+```
+
+```{r draw_map}
+us <- c(left = -125, bottom = 25.75, right = -67, top = 49)
+ggmap::get_stamenmap(us, zoom = 5, maptype = "toner-lite") %>% ggmap::ggmap() 
+
+```
+
+```{r endpoints}
+if (F) {
+
+# remove old .httr-oauth (till I know what I am doing)
+  file.remove(".httr-oauth")
+
+}
+
+# be sure enabled
+  base::options("httr_oauth_cache" = TRUE) 
+
+# https://developers.google.com/accounts/docs/OAuth2InstalledApp
+  httr::oauth_endpoints("google")
+```
+
+## Create & Register myapp with Google
+```{r register}
+#  Security:  key & secret are in ~/.Renviron ( do not push to github )
+#  NOTE:  google calls this key as "Client ID"
+
+  myapp <- httr::oauth_app("google",
+    key  <- Sys.getenv("OAUTH2_ID"),
+    secret  <- Sys.getenv("OAUTH2_SECRET")
+  )
+
+    key  <- Sys.getenv("OAUTH2_ID")
+key
+  myapp
+```
+
+## SCOPES, auth.code
+  - Create .httr-oauth (binary) in project root.
+
+##  SCOPE 3 (BEST)
+  - USE THIS auth.code for most work
+  - Add scope for various youtube access.
+  - youtube.force-ssl needed to retrieve user's playists, videos in each
+```{r youtube_scopes}
+#  
+scope = 
+  c("https://www.googleapis.com/auth/userinfo.profile",
+  "https://www.googleapis.com/auth/userinfo.email",
+  "https://www.googleapis.com/auth/youtube",  # manage
+  "https://www.googleapis.com/auth/youtube.readonly",
+  "https://www.googleapis.com/auth/youtube.force-ssl"
+        )
+ ```  
+## Get auth.code | token ....
+```{r get_auth.code}
+# NO .httr-oauth? 
+# THEN pop, asks users,  AND warns not verified, not safe
+
+# if option("httr_oauth_cache") was set to TRUE , token will then know to store
+# in .httr-oauth
+  auth.code <- httr::oauth2.0_token(
+              endpoint = httr::oauth_endpoints("google"),
+              app = myapp,
+              #cache = getOption("httr_oauth_cache"),
+              cache = T,
+              scope = scope
+)
+
+auth.code
+```
+```{r check_token}
+x  <- readRDS(".httr-oauth")
+x
+names(x)
+length(x)
+```
+
+
+
+```{r render, eval=FALSE	} 
+file <- ""
+file  <- basename(file)
+dir <- "rmd"
+
+jimTools::ren_pdf(file,dir)
+jimTools::ren_github(file, dir)
+```

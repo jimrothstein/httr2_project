@@ -1,0 +1,263 @@
+---
+title: "R and Restful APIs "
+author: jim rothstein
+date: 
+#output:  
+#    pdf_document:
+#      latex_engine:  lualatex  
+#output:  html_document
+output:
+    beamer_presentation:
+        latex_engine: lualatex
+        toc:  true
+#        incremental:  true
+        keep_tex:  true
+        highlight:  espresso  
+        slide_level:  1
+        includes:
+          in_header:  preamble.tex
+fontsize:  8pt
+---
+
+<!-- 
+PURPOSE:   Create a .pdf that is BEAMER
+BEAMER is tex file (?) so latex can be incorporated.
+CREATE:     rmarkdown::render("001_first.Rmd)
+VIEW:       :!zathura 001_first.pdf
+
+Patience:   slow
+-->
+
+```{r setup, include=F, eval=T}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE)
+
+```
+
+```{r set_hooks, include=F, eval=T}
+# foo1 will be a function
+library(knitr)
+knit_hooks$set(foo1 = function(before, options, envir) {
+  if (before) {
+      
+    '\\tiny _I appear before a chunk!_\n\n'
+  } else {
+    '\\normalsize  \n\n_I am after a chunk..._'
+  }
+})
+```
+
+<!--        Begin       -->
+
+# API and Restful APIs
+
+##  API is way to open a close software system in specific ways and to specific
+users.
+
+#  Restful Examples
+```{r examples, child=c("slide_restful_examples.Rmd")}
+```
+
+
+<!--  Cursory, limited explanation of Restful APIs 
+    links for reader.
+
+    REWRITE
+    
+-->
+
+#   RESTFUL APIs
+```{r what_are, child=c("slide_what_are_REST_API.Rmd")}
+```
+
+---
+
+
+## DEFINITION  
+(from Wikipedia)https://en.wikipedia.org/wiki/Representational_state_transfer#Applied_to_web_services
+
+>   Web service APIs that adhere to the REST architectural constraints are called RESTful APIs.[12] HTTP-based RESTful APIs are defined with the following aspects:[13]
+
+  - a base URI, such as http://api.example.com/;
+  - standard HTTP methods (e.g., GET, POST, PUT, and DELETE);
+  - a media type that defines state transition data elements (e.g., Atom, microformats, application/vnd.collection+json,[13]: 91–99  etc.). The current representation tells the client how to compose requests for transitions to all the next available application states. This could be as simple as a URI or as complex as a Java applet.[14]
+
+---
+
+<!-- As practical matter, what do we need to know? --> 
+
+#   Really need to know?
+
+No R libraries (wrapper) for Github API
+
+
+<!--    GOAL  write in R-->
+
+# Goal:   Use R to programmatically retrieve data for analysis, securely.
+
+```{r goal, child=c("slide_goal.Rmd"), foo1="whatever"}
+```
+
+---
+
+<!-- So To GET to the GOAL .... Things to KNOW-->
+
+#  What technologies are APIs built upon?
+```{r what_technologies, child=c("slide_technologies.Rmd")}
+```
+
+---
+
+#   HTTP Diagram
+```{r, http, child=c("slide_http.Rmd")}
+```
+
+---
+
+# API documenation
+Endpoints:  
+https://docs.github.com/en/rest/overview/endpoints-available-for-github-apps
+https://developers.google.com/youtube/v3/docs/playlists/list
+---
+
+<!--  important of CURL  -->
+
+CURL intro (using httpbin.org) 
+do in browser, 
+then in curl
+compare: curl -is httpbin.org vs httpbin.org/get
+
+browser:  show curl
+
+```
+curl -sv http://httpbin.org 
+```
+#  CURL intro (using Github)  (Live)
+
+```{r, curl_intro, child=c("slide_curl_intro_github.Rmd"), include=F, eval=F}
+```
+
+---
+
+
+<!--   R   Finally!    Show work through vignette for httr2? -->
+
+#   We know some of the plumbing:  HTTP, API documentation, CURL ... 
+
+##   Finally, Do this in R, httr2: 
+
+https://httr2.r-lib.org
+
+show httpbin.org
+show github.com
+##  EXAMPLE:   Basic GET in R
+```{r, httr2_intro, child=c("slide_httr2_intro.Rmd")}
+```
+
+---
+#   json
+
+```{zsh, foo1="whatever"}
+curl -s https://api.github.com/users/jimrothstein | head
+```
+
+#   json, -i includes headers
+```{zsh}
+curl -si https://api.github.com/users/jimrothstein | head
+```
+
+---
+
+<!--    But wait !    Security  -->
+
+#   
+-   But how to include security?
+    
+#  GITHUB Personal Access Token (PAT)
+```{r, httr2_intro, child=c("slide_PAT.Rmd")}
+```
+-   EXAMPLE:    Github token (Personal Access Token) (walk through)
+-   Read the Documentation
+-   SCOPE
+-   Back to CURL
+<!--    Github's PAT -->
+
+#   Github PAT token
+Why a token?
+
+settings | developer settings (bottom left)
+
+more info:
+get token: https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api
+
+https://docs.github.com/en/rest
+```{zsh, echo=T}
+export token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+# echo $token
+
+curl -si -u jimrothstein:$token https://api.github.com/users/jimrothstein |
+head
+```
+
+# store the token ~/.Renviron
+#   token, works
+```{zsh, echo=T}
+# Authorization?
+export token=$(Rscript -e "cat(Sys.getenv('GITHUB_PAT'))")
+echo $token
+curl -Hs "Authorization: token $token" https://api.github.com/users/codertocat -I
+```
+
+
+
+
+<!--    So far, consumer of APIs.   How to produce APIs -->
+
+#   There is another side to all this:  the Creater of APIs.
+R has a tool `plumber`.   
+Not for today.
+
+
+
+<!--    Add a user of your code:   3 players:   User, your code, the server -->
+#  One issue not to overlook:  3rd party Security
+```{r, httr2_intro, child=c("slide_security.Rmd")}
+```
+
+#   So far, the user has been you - the Developer.  What if you want others to
+use app?     They are going to give their username/password to your app.
+```{r, httr2_intro, child=c("slide_oauth_intro.Rmd")}
+```
+
+
+<!--    Practical difficulties - each API different -->
+
+##  EXAMPLE    Use Github uses token (PAT) in R.
+
+##  New problem:  each API server is different!
+(Quote:   httr2:: docs)
+
+## EXAMPLES:   Many (follow httr2:: vignette) + Google, Youtube ...
+
+
+```{r, openAPI, child=c("slide_openAPI.Rmd")}
+```
+
+```{r, r_pkgs, child=c("slide_R_pkgs.Rmd")}
+```
+
+```{r end2}
+#knitr::knit_exit()
+```
+
+
+```{r render, eval=F, include=F}
+{
+file <- "002_API_R_talk.Rmd"
+file  <- normalizePath(file)
+file
+}
+rmarkdown::render(file, output_dir = "~/Downloads/print_and_delete")
+```

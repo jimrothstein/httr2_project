@@ -1,0 +1,140 @@
+##  Simple GET
+```{r}
+##  return what is sent
+library(httr2)
+req  <- request("https://httpbin.org")
+req
+
+##  Dry run
+```{r}
+req   |> req_dry_run()
+```
+
+#
+## Run it
+
+```{r}
+resp  <- req |> req_perform()
+resp
+```
+
+## Body
+```{r}
+resp |> resp_body_string()
+resp |> resp_body_html()
+```
+
+## Add header  
+```{r add_header_h}
+req |> 
+    req_headers(name =  "jim", location =  quote(eugene) ) |>
+    req_headers("ACCEPT" = "application/json") |>
+    req_dry_run()
+```
+
+## Run it with header
+```{r add_header}
+req  <- request("https://httpbin.org/get")
+{
+resp  <- req |> 
+    req_headers(name =  "jim", location =  quote(eugene) ) |>
+    req_headers(ACCEPT = "application/json") |>
+    req_perform()
+}
+resp |> resp_body_json()
+```
+
+```{r eval=F, include=F}
+
+## SAME as
+##  why need get?
+req <- request("https://httpbin.org/get")
+req
+```
+---
+
+#   
+##  Add query string
+```{r tack}
+## tack on query
+req2 <- request("https://httpbin.org/get?q=joe")
+req2
+```
+
+```{r}
+## Examine, headers automatically added
+req %>% req_dry_run()
+```
+
+##  Add a body, in json
+```{r}
+
+req |>
+    req_body_json(list(x=1, friend="joe")) |>
+    req_dry_run()
+
+```
+
+
+
+#### Run request
+```{r}
+
+## fills a buffer, see help for example.
+if (F) req |> req_stream()
+
+##  To Console
+    req |> req_perform()
+
+##  Capture response
+    resp  <- req |> req_perform()
+    resp
+
+
+```
+
+#### Many verbs to extract specific resp pieces
+```{r pieces, include=F, eval=F}
+
+resp_body_raw(resp)
+resp_body_json(resp)
+
+##  See help, must add code for these to work 
+    if(F)   resp_body_xml(resp)
+    if(F)   resp_body_xml(resp, check_type=F )
+    if(F)   resp_body_html(resp)
+
+resp_content_type(resp)
+resp_encoding(resp)
+resp_date(resp)
+
+##  HTTP response code
+    resp_status(resp)
+
+##  if ERROR, convert to R
+    req |> req_url_path_append("abc") |> req_dry_run()
+
+    resp  <- req |> req_url_path_append("abc") |> req_perform()
+
+##  don't undersand
+    resp_is_error(resp)
+    print(resp_check_status(resp))
+    last_response()
+```
+
+
+#### Curl
+```{r curl}
+
+    str  <- "curl http://httpd.org"
+    curl_translate(str)
+
+    curl_translate("curl http://example.com --header A:1 --header B:2")
+
+##  curl usage -- very abbreviated
+    curl_help()
+```
+
+
+
+

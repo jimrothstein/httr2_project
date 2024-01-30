@@ -1,0 +1,40 @@
+---
+title: "Playlists"
+author: jim rothstein
+date: 
+output:  
+    pdf_document:
+      latex_engine:  lualatex  
+---
+
+\footnotesize
+First, run 140 to retrieve and save playlists.
+Then render here:  experimenting with simple ways to print.
+
+
+
+```{r}
+
+library(data.table)
+library(knitr)
+
+playlists=readRDS(file="playlists.rds")
+
+playlists[order(snippet.title) , .(snippet.title, snippet.description) ] 
+
+#playlists[order(snippet.title) , .(snippet.title, snippet.description) ] %>% knitr::kable()
+
+#playlists[order(snippet.title) , .(snippet.title, snippet.description, contentDetails.totalItemCount)] %>% knitr::kable()
+
+```
+
+
+```{r render, eval=F, include=F}
+{
+file <- "142_print_playlists.Rmd"
+file  <- normalizePath(file)
+file
+}
+rmarkdown::render(file, output_dir = "~/Downloads/print_and_delete")
+```
+

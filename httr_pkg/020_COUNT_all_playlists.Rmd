@@ -1,0 +1,97 @@
+---
+title: Template for .Rmd
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc:  TRUE
+    toc_depth:  1
+fontsize: 12pt
+geometry: margin=0.5in,top=0.25in
+#  md_document:
+#  html_document:
+#    toc: true
+#  	toc_float: true
+#    css: styles.css
+---
+
+GIVEN a channel ID  (mine) , return total number of playlists.
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,  
+                      comment="      ##",  
+                      error=TRUE, 
+                      collapse=TRUE)
+load_all()
+```
+
+
+
+```{r begin}
+#  docs:  https://developers.google.com/youtube/v3/docs/playlists
+api <- get_api_codes()
+if (!exists("l")) l  <- get_typical_values()
+base_url <- "https://www.googleapis.com/youtube/v3/playlists"
+```
+
+
+Auth_code - this a bad hack, till I understand tokens
+```{r get_auth_code}
+auth.code  <- readRDS(".httr-oauth")[[1]]
+auth.code
+```
+
+## get_playlists_count()
+```{r get_count}
+#'  @title get_playlists_count
+#'  @description Given query (with channelId), return the number of playlists
+
+query  <- list(
+  part="snippet",
+ 	channelId="UClB5qWyXejlAwwkDAzJis-Q",
+  #mine = 'true',
+	max_results=5,
+  fields="pageInfo(totalResults)",
+	key=api$api_key
+	)
+r  <- httr::GET(url = base_url,
+ 							query= query,
+ 							config = httr::config(token = auth.code)
+							)
+
+r  <- httr::GET(url = base_url,
+ 							query= query
+							)
+r
+httr::stop_for_status(r)
+
+json_content  <- get_json(r)
+count  <- json_content$pageInfo$totalResults
+count #  ~157,  16 is too low
+
+```
+
+```{r}
+r  <- httr::HEAD(url = base_url,
+ 							query= query,
+ 							config = httr::config(token = auth.code)
+							) 
+r
+```
+
+
+```{r knit_exit()}
+knitr::knit_exit()
+```
+```{r render, eval=FALSE, include=FALSE 	} 
+# TODO:  file is found when knitr runs (see above)
+
+# file must be of form:
+# dir/name_of_this_file    where dir is relative to project root
+
+file  <- "rmd/010_playlists.Rmd"
+
+# in general, pdf will look nicer
+rmarkdown::render(file,
+                  #output_format = "pdf_document",
+                  output_format = "html_document",
+                  output_file = "~/Downloads/print_and_delete/out")
+```

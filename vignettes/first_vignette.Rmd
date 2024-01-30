@@ -1,0 +1,23 @@
+---
+title: "first_vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{first_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+REF:
+
+* [jennybc: oauth2]( https://github.com/tidyverse/googledrive/blob/master/vignettes/articles/bring-your-own-app.Rmd)
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, include=FALSE	}
+library(yt )
+```

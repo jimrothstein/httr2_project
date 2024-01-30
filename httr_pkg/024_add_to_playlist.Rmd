@@ -1,0 +1,127 @@
+---
+title: "pkg_yt_api/rmd/014_add_to_playlist.Rmd"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc:  TRUE
+    toc_depth:  1
+fontsize: 12pt
+geometry: margin=0.5in,top=0.25in
+#  md_document:
+#  html_document:
+#    toc: true
+#  	toc_float: true
+#    css: styles.css
+---
+
+To add a video to playlist:
+- Study curl (at bottom)
+- uses POST:
+	-	query
+	- body
+	- config
+	- headers:  data
+
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,  comment="      ##",  error=TRUE, collapse=TRUE)
+```
+
+```{r library, include=FALSE} 
+here()
+load_all()
+```
+
+```{r initialize_for_api}
+api  <- get_api_codes()
+
+# authorize, either finds .httr-oauth  or asks for new, sets "google_token"
+myapp  <- tuber::yt_oauth(app_id = api$oauth2_id,
+													app_secret = api$oauth2_secret)
+
+google_token = base::getOption("google_token") 
+
+# set httr (cookies, headers ...)
+config  <-set_config(google_token)
+```
+
+```{r initialize_specifics}
+
+base_url <- "https://www.googleapis.com/youtube/v3/playlistItems"
+
+## current download
+##
+# puppet on string
+# https://www.youtube.com/watch?v=c2bl5ZgSagk
+video_id  <- "c2bl5ZgSagk"
+
+# https://www.youtube.com/playlist?list=PLbcglKxZP5PPLN00WGVqDMthLfML3G6hW
+playlist_id  <- "PLbcglKxZP5PPLN00WGVqDMthLfML3G6hW"
+##
+```
+
+
+helper function: set_body 
+```{r set_body}
+set_body  <- function(video_id, playlist_id){
+	# 
+	glue::glue(.open= "<"  ,
+						 .close= ">" ,
+						 '{"snippet":{"playlistId":"<playlist_id>","position":0,"resourceId":{"kind":"youtube#video","videoId":"<video_id>"}}}'
+	) 
+}
+```
+
+helper add_video
+```{r add_video}
+add_video  <- function(url, query, body, config) {
+
+r <- httr::POST(url=base_url, 
+								query =  query,
+								body = body,
+								encode="json",
+								config = config
+								)
+}
+```
+
+Begin:  
+```{r begin}
+query  <- set_query(part="snippet",
+                key=api$api_key)
+config  <- set_config(google_token)
+
+# Set Body
+body  <- set_body(video_id, playlist_id)
+r  <- add_video(base_url, query,  body, config)
+httr::content(r)
+
+```
+
+***
+
+Render
+```{r render, eval=FALSE, echo=FALSE	}
+p  <- fs::path()
+w  <- fs::path_wd()
+w
+file=""
+dir=""
+
+ren_pdf(file,dir)
+ren_github(file, dir)
+
+#knitr::knit_exit()
+```
+
+Basis for Query:  a query portion, and several headers
+```{r study_}
+# curl --request POST \
+#   'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&key=[YOUR_API_KEY]' \
+#   --header 'Authorization: Bearer [YOUR_ACCESS_TOKEN]' \
+#   --header 'Accept: application/json' \
+#   --header 'Content-Type: application/json' \
+#   --data '{"snippet":{"playlistId":"YOUR_PLAYLIST_ID","position":0,"resourceId":{"kind":"youtube#video","videoId":"M7FIvfx5J10"}}}' \
+#   --compressed
+# 
+```

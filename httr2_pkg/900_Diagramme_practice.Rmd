@@ -1,0 +1,63 @@
+--- title: Template for .Rmd 
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+toc: TRUE 
+toc_depth:  1 
+fontsize: 12pt 
+geometry: margin=0.5in,top=0.25in 
+TAGS:  httr,
+---
+
+PURPOSE:    DiagrammeR sketches for API, R talk
+
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE)
+library(DiagrammeR)
+```
+```{r graph}
+DiagrammeR::grViz("
+  digraph rmarkdown {
+    vector -> atomic -> character
+    atomic -> numeric
+    atomic -> logical
+    numeric -> double
+    numeric -> integer
+    integer -> factor
+    double  -> date
+    double -> POSIXct
+    vector -> list
+  }
+  ", height=600)
+```
+
+```
+# 1. Make a play graph
+tmp = DiagrammeR::grViz('digraph{a->b; c->a; c->b; c->d;}')
+
+# 2. Convert to SVG, then save as png
+tmp = DiagrammeRsvg::export_svg(tmp)
+tmp = charToRaw(tmp) # flatten
+rsvg::rsvg_png(tmp, "g.png") # saved graph as png in current working directory
+```
+
+```{r client_server}
+##  webshot creates pdf (?) image of html page.
+webshot::install_phantomjs()
+
+tmp  <- DiagrammeR::grViz("
+  digraph rmarkdown {
+      server  -> client
+  }
+  ", height=600)
+
+
+tmp = DiagrammeRsvg::export_svg(tmp)
+tmp = charToRaw(tmp) # flatten
+rsvg::rsvg_png(tmp, "g.png") # saved graph as png in current working directory
+```

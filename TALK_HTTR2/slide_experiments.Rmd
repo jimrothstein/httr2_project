@@ -1,0 +1,62 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+#output:  
+#    pdf_document:
+#      latex_engine:  lualatex  
+#output:  html_document
+output:
+    beamer_presentation:
+        #latex_engine: xelatex
+        latex_engine: lualatex
+        incremental:  true  
+        keep_tex:  true
+        highlight:  espresso  
+        slide_level:  1
+        includes:
+          in_header:  preamble.tex
+fontsize:  8pt
+---
+
+
+#   Begin
+>   Block Quote
+>
+
+
+#  Slide ONE    
+
+\alert{ this is an alert}
+
+##  Topic ONE
+-   item ONE
+-   \textcolor{blue}{item two}
+
+---
+
+##  Topic TWO
+
+-   Rough analogy:   Valet Key
+-   Specifically, **Authentication** and "Authorization"
+-   3 device model
+-   notion of 1 party trusted by other two, without revealing passwords.
+
+#   SLIDE TWO
+
+```{r render, eval=F, include=F}
+{
+file <- "slide_experiments.Rmd"
+file  <- normalizePath(file)
+file
+}
+rmarkdown::render(file)
+rmarkdown::render(file, output_dir="~/Downloads/print_and_delete/")
+```
+
+
+
+
+
+
+

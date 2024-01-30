@@ -1,0 +1,18 @@
+#   file <- "024_curl_github_authenticated_user.txt"
+
+## ===========================================
+# ===========================================
+#   GITHUB API:   Starting with RESTFUL API
+# ===========================================
+#
+# REFERENCE:
+# https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api
+#
+#
+#
+
+# ===========================================
+#  WORKS:  curl -u jimrothsein:$token --config <this file> 
+url="https://api.github.com/user"
+-i
+-H "Accept: application/vnd.github.v3+json"

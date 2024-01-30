@@ -1,0 +1,27 @@
+---
+title: "R, API and OAUTH2"
+author: jim rothstein
+date: 
+#output:  
+#    pdf_document:
+#      latex_engine:  lualatex  
+#output:  html_document
+output:
+    beamer_presentation:
+        latex_engine: lualatex
+fontsize:  8pt
+---
+
+####   How to *WRITE* an API:    openAPI
+
+####  Attempt to simplify and standardize how the developer determines the API structure.
+
+https://oai.github.io/Documentation/start-here.html
+
+```
+
+The OAS defines a standard, programming language-agnostic interface description for REST APIs, which allows both humans and computers to discover and understand the capabilities of a service without requiring access to source code, additional documentation, or inspection of network traffic. When properly defined via OAS, a consumer can understand and interact with the remote service with a minimal amount of implementation logic. Similar to what interface descriptions have done for lower-level programming, the OAS removes guesswork in calling a service.
+```
+
+
+###  R Plumber package sets up local server to create APIs.
