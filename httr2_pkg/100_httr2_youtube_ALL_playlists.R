@@ -19,20 +19,22 @@
   client_secret <- Sys.getenv("OAUTH2_SECRET")
 
   ##  Google wants multiple scopes separated by white space.
-  scope <- paste0(
-    "https://www.googleapis.com/auth/youtube.force-ssl ",
-    "https://www.googleapis.com/auth/youtube"
-  )
+  #  scope <- paste0(
+  #    "https://www.googleapis.com/auth/youtube.force-ssl ",
+  #    "https://www.googleapis.com/auth/youtube"
+  #  )
 }
 
 # 2023-12-07 G- complains can only have ONE scope
 scope <- paste0("https://www.googleapis.com/auth/youtube.force-ssl")
+scope <- "https://www.googleapis.com/auth/youtube"
 scope
 
 ## 	Begin assembly for  httr2::req_oauth_auth_code()
 ## 		But do not run, yet
 {
-  auth_params <- list(scope = scope, response_type = "code")
+  #  auth_params <- list(scope = scope, response_type = "code")
+  auth_params <- list(scope = scope)
   fields <- paste(
     sep = ",", "nextPageToken",
     "items(snippet(title,description,publishedAt))"

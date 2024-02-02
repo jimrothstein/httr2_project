@@ -1,0 +1,405 @@
+--- 
+title: "`r knitr::current_input()`"
+date: "`r paste('last updated', 
+    format(lubridate::now(), '%H:%M, %d %B %Y'))`"
+output: 
+  html_document:
+        code_folding: show
+        toc: true 
+        toc_depth: 4
+        toc_float: true
+        mathjax: default
+  pdf_document:   
+    latex_engine: lualatex  
+    toc: true
+    toc_depth:  4   
+    keep_tex:  true  
+    keep_md:   true  
+  header-includes:  
+    -  \usepackage{helvet}  
+    -  \renewcommand{\familydefault}{\sfdefault}  
+    -  \usepackage{ulem}
+fontsize: 10pt   
+geometry: margin=0.4in,top=0.25in   
+TAGS:  httr2,
+---
+PURPOSE:    HTTR2::   practice with OAUTH2 google People API
+Reproduce what browser can do.
+
+
+REF : 
+Google:   project;  jrGooglePeopleapi
+https://httr2.r-lib.org/articles/httr2.html
+```{r setup, include=FALSE		}
+knitr::opts_chunk$set(echo = TRUE,
+                      comment = "      ##",
+                      error = TRUE,
+                      collapse = TRUE)
+library(httr2)
+load_all()
+```
+
+####    G- API key, obfuscate, other Useful, collect here
+
+####    For Google People API
+```{r usefu}
+client_id="358088442289-amr4b5f5l1h9jicffu12d9t1vooiv10d.apps.googleusercontent.com"
+
+# auth
+endpoint = "https://accounts.google.com/o/oauth2/v2/auth"
+scope="https://www.googleapis.com/auth/userinfo.profile"
+
+
+## from httr:   useful?
+  httr::oauth_endpoints("google")
+# <oauth_endpoint>
+#  authorize: https://accounts.google.com/o/oauth2/auth
+#  access:    https://accounts.google.com/o/oauth2/token
+#  validate:  https://www.googleapis.com/oauth2/v1/tokeninfo
+#  revoke:    https://accounts.google.com/o/oauth2/revoke
+
+
+secret  <-  "Well it is a secret"
+
+# to hide it:
+obfuscate(secret)
+# obfuscated("3UwucEbpj75RVE33K_zutT4j7iPfsogxPuGLfZ-YhyukWNs")
+```
+
+
+#### Step #1, get auth code (via browser)
+````{r}
+
+```
+Put into browser to (1) authorize (2) return AUTH CODE
+Goal:  Do it R.
+
+```
+
+````
+
+####    Create client to youtube
+```{r client}
+
+PEOPLE_CLIENT_ID  <- Sys.getenv("PEOPLE_CLIENT_ID")
+PEOPLE_CLIENT_SECRET  <- Sys.getenv("PEOPLE_CLIENT_SECRET")
+
+## paste this string into browser, get AUTH CODE
+paste_into_browser <- paste0("https://accounts.google.com/o/oauth2/v2/auth?client_id=", PEOPLE_CLIENT_ID, 
+       "&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=https://www.googleapis.com/auth/userinfo.profile&response_type=code")
+
+
+
+# then paste the reply,   here
+auth.code ="4/1AX4XfWiQxltLCQV8QGTi2sZ5fnVMEgj6PMhWp46911_nVQMv4aSD7RFcZq4"
+```
+#### Exchange the auth.code for a token
+```{r get_token}
+## assemble a POST
+data  <- paste0("code=", auth.code, "&client_secret=", PEOPLE_CLIENT_SECRET, 
+                "&redirect_uri=urn:ietf:wg:oauth:2.0:oob",
+                "&grant_type=authorization_code")
+data
+
+
+url  <- "https://accounts.google.com/o/oauth2/token" 
+
+req  <- request(base_url = url ) %>% httr2::req_body_raw(body=data)
+req |> req_dry_run()
+req |> req_perform()
+
+
+```
+
+myapp = httr2::oauth_client(
+        id =    client_id,
+        token_url = endpoint, 
+        name = "first_people_api"            
+    )
+
+myapp
+
+
+```
+```{r}
+
+```{r token}
+token  <-   oauth_flow_auth_code(client = myapp, 
+                     auth_url = "https://accounts.google.com/o/oauth2/auth",
+                     scope = scope
+                     )
+token
+```
+
+
+##  LEGACY
+#### GET can have header, query, not body
+#### get a req object, using httpbin, GET http://httpbin.org
+```{r}
+##  return what is sent
+req <- request("https://httpbin.org/get")
+req
+
+## tack on query
+req2 <- request("https://httpbin.org/get?q=joe")
+req2
+
+## now build, httr2 adds default headers
+req %>% req_dry_run()
+
+
+##  quote works
+req |> req_headers(name =  "jim", location =  quote(eugene) )
+```
+
+### LEGACY
+```{r endpoints}
+if (F) {
+
+# remove old .httr-oauth (till I know what I am doing)
+  file.remove(".httr-oauth")
+
+}
+
+# be sure enabled
+  base::options("httr_oauth_cache" = TRUE) 
+
+# https://developers.google.com/accounts/docs/OAuth2InstalledApp
+  httr::oauth_endpoints("google")
+```
+
+## Create & Register myapp with Google
+```{r register}
+#  Security:  key & secret are in ~/.Renviron ( do not push to github )
+#  NOTE:  google calls this key as "Client ID"
+#   Rmk:   key is visible in myapp
+
+  myapp <- httr::oauth_app("google",
+    key  <- Sys.getenv("OAUTH2_ID"),
+    secret  <- Sys.getenv("OAUTH2_SECRET")
+  )
+
+
+  myapp
+```
+
+## SCOPES, auth.code
+  - Create .httr-oauth (binary) in project root.
+
+##  SCOPE 3 (BEST)
+  - USE THIS auth.code for most work
+  - Add scope for various youtube access.
+  - youtube.force-ssl needed to retrieve user's playists, videos in each
+```{r youtube_scopes}
+#  
+{
+scope = 
+  c("https://www.googleapis.com/auth/userinfo.profile",
+  "https://www.googleapis.com/auth/userinfo.email",
+  "https://www.googleapis.com/auth/youtube",  # manage
+  "https://www.googleapis.com/auth/youtube.readonly",
+  "https://www.googleapis.com/auth/youtube.force-ssl"
+   )
+}
+ ```  
+## Get auth.code | token ....
+```{r get_auth.code}
+# NO .httr-oauth?  |  THEN pop, asks users,  AND warns not verified, not safe
+
+# Rmk1:  option("httr_oauth_cache") was set to TRUE , token will then know to store
+  auth.code <- httr::oauth2.0_token(
+              endpoint = httr::oauth_endpoints("google"),
+              app = myapp,
+              #cache = getOption("httr_oauth_cache"),
+              cache = T,
+              scope = scope
+)
+
+auth.code
+```
+
+#### Examine token in .httr-oauth
+```{r check_token}
+x  <- readRDS(".httr-oauth")
+x
+names(x)
+length(x)
+```
+
+
+
+# ============
+##### LEGACY
+# ============
+
+Simplest Scope
+
+```{r .httr-oauth}
+
+# sometimes this pops  up, too.
+auth.code <- httr::oauth2.0_token(
+              endpoint = httr::oauth_endpoints("google"),
+              app = myapp,
+              scope = "https://www.googleapis.com/auth/userinfo.profile")
+
+```
+
+## Is auth.code valid?
+See 011_httr_check_valid_token.Rmd
+
+
+#### now use GET, Works
+#### TODO:  review httr commands here...
+```{r use_api}
+req <- httr::GET(
+  "https://www.googleapis.com/oauth2/v1/userinfo",
+  httr::config(token = auth.code) )
+
+httr::stop_for_status(req)
+str(httr::content(req))
+
+### Compare to
+httr::headers(req)
+
+```
+#### but HEAD does not work, also review httr:: calls here
+```{r head}
+req  <- httr::HEAD(
+  "https://www.googleapis.com/oauth2/v1/userinfo",
+  httr::config(token = auth.code) 
+  )
+
+httr::stop_for_status(req)
+str(httr::content(req))
+
+
+### identical to GET, but without the body
+httr::HEAD("http://google.com")
+
+### headers in response
+httr::headers(httr::HEAD("http://google.com"))
+```
+
+
+## Examples
+```{r one_video}
+
+# prep for GET
+if (!exists("api")) api <- get_api_codes()
+
+l <- get_typical_values()
+maxResults  <- l$maxResults
+playlistId  <- l$playlistId
+video_id = l$videoId
+base_url <- "https://www.googleapis.com/youtube/v3/videos"
+
+
+api_opts <- list(part = "snippet",
+                 id = video_id,
+                 maxResults = maxResults,
+                 fields="items(snippet(title))",
+                 key = api$api_key)
+
+
+## TODO:  here r is https://   EXPLAIN
+r  <- httr::HEAD(base_url, query = api_opts, httr::config(token= auth.code))
+
+
+# WORKS!!!!
+r  <- httr::GET(base_url, query = api_opts, httr::config(token= auth.code))
+httr::stop_for_status(r)
+httr::content(r)
+str(httr::content(r))
+```
+
+TODO - not working, missing , in list()  -- is it TRUE, TRUE?
+Given a channelId, returns total number of playlists
+```{r playlist_count}
+api <- get_api_codes()
+api
+
+base_url <- "https://www.googleapis.com/youtube/v3/playlists"
+
+# mine =  ????
+query  <- list(
+						part="snippet, contentDetails",
+    				channel_id="UClB5qWyXejlAwwkDAzJis-Q",
+            mine = TRUE, 
+						maxResults=3,
+						fields="pageInfo(totalResults)",
+						key = api$api_key
+						)
+
+r  <- httr::GET("https://www.googleapis.com/youtube/v3/playlists",
+ 							query= query,
+ 							config = httr::config(token = auth.code)
+							) %>% httr::stop_for_status()
+
+json_content  <- get_json(r)
+count  <- json_content$pageInfo$totalResults
+count
+#jr_get_total_playlists(query) #142
+
+
+# see HEAD?
+httr::HEAD("https://www.googleapis.com/youtube/v3/playlists",
+ 							query= query,
+ 							config = config(token=auth.code))
+```
+
+
+Comments
+```{r comments}
+
+api  <- get_api_codes()
+base_url <- "https://www.googleapis.com/youtube/v3/commentThreads"
+l <- get_typical_values()
+
+#playlistId  <- "PLbcglKxZP5PMZ7afIT7E2o9NwQIzqTI5l"
+
+# fields , careful if split on mutliple lines, use paste
+query  <- list(
+	part="snippet,replies", 
+	maxResults =l$maxResults, 
+	fields=paste(sep=", ", "nextPageToken", 
+			 "items(snippet(topLevelComment(snippet(videoId,textDisplay))))"
+			 ),
+	key = api$api_key, 
+	pageToken = NULL, 
+	videoId = l$videoId)
+
+# google_token = base::getOption("google_token") 
+# config  <- httr::config(google_token)
+
+```
+
+## 1st batch
+```{r get}
+
+r  <- httr::GET(base_url, query = query, httr::config(token= auth.code))
+stop_for_status(r)
+httr::content(r)
+str(httr::content(r))
+
+
+#comments  <- process_comments(r, comments)
+comments  <- jr_get_batch_comments(base_url, query, config) 
+comments
+```
+
+***
+
+```{r knit_exit()} 
+knitr::knit_exit()
+```
+
+\newpage
+
+```{r render, eval=FALSE	} 
+file <- ""
+file  <- basename(file)
+dir <- "rmd"
+
+jimTools::ren_pdf(file,dir)
+jimTools::ren_github(file, dir)
+```
