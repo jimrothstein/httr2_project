@@ -1,0 +1,53 @@
+# PURPOSE:  Use vctrs:: package to probe
+
+
+* Went through Part 2 of Jon's starting with APIs (https://www.youtube.com/watch?v=WGxr4BTP75w) and quickly realized many of the underlying details evaded me.
+
+* So, in my own mind, I  tried to separate things like `definitions`, `tools`,
+  `meta data`, `strategies` when working through lists.   Wound up reading
+  parts of `vctrs::`, `tibblify::`, `rlang::`  These have a number of
+  interesting approaches.   But to no surprise, concluded `r4ds Chapter 23
+  Hierarchical Data` the best place to start.
+
+* Now I keep track of useful verbs (rlang2::names2, vctrs::vec_ptype_show), and
+  useful examples (compare attributes of K=list(1,2), L=list(a=1,2)). But real
+  immediate goal is broaden what is `predictable` (I know in advance what will
+  happen). Then return to ideas in `vctrs and tibblify.`
+
+* My 2 cents.
+  
+```{r}
+library(testthat)
+library(rlang)
+library(vctrs)
+
+
+
+```
+
+```
+testthat::test_that("basic lists", {
+  L <- list(1, 2)
+  L1 <- list(a = 1, 2)
+  L2 <- list(a = 1, b = 2)
+
+  # neither meet definition of `named`
+  rlang::is_named(L) # [1] FALSE
+  rlang::is_named(L1) # [1] FALSE
+  rlang::is_named(L2) # [1] TRUE
+  rlang::have_name(L1) # vectorized [1]  TRUE FALSE
+
+
+  # only L1 has attributes
+  expect_null(attributes(L))
+
+  vctrs::vec_ptype_show(attributes(L1))
+  expect_vector(attributes(L1))
+  expect_true(obj_is_list(attributes(L1)))
+  expect_true(obj_is_vector(attributes(L1)))
+})
+
+lapply(list(L, L1, L2), rlang::names2)
+lapply(list(L, L1, L2), names)
+sapply(list(L, L1, L2), attributes)
+dput(sapply(list(L, L1, L2), attributes))
