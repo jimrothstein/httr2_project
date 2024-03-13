@@ -7,7 +7,6 @@ if (file.exists("all_apis.RDS")) {
   all_apis <- readRDS("all_apis.RDS")
 }
 
-# source("../WAPIR/010_nested_json_from_apis_guru.R")
 
 
 # rectangle  (compare:   enframe(unlist(app_apis)))
@@ -15,7 +14,7 @@ z <- enframe(all_apis)
 z
 
 
-# examine each row
+# examine each row, number of elements in $value
 z$value |> lengths()
 
 # all the same length? yes
@@ -26,10 +25,14 @@ z$value |>
 
 
 ##  T if every elment is named
-rlang::is_named(z$value) # [1] FALSE
-elements <- sapply(z$value, is_named)
+rlang::is_named(z$value) # [1] FALSE     WHICH IS FALSE?
+elements <- sapply(z$value, rlang::is_named)
+
+any(elements)
+all(elements) # [1] TRUE
+
 head(elements)
-length(elements)
+length(elements) # [1] 2529
 
 str(elements, max.depth = 2)
 sapply(elements, is_named)
@@ -41,6 +44,9 @@ length(names(z$value[[1]]))
 
 ##  Grab non-empty (actually none are empty)
 non_empties <- z$value[lengths(z$value) > 0]
+empties <- z$value[lengths(z$value) == 0] #  0
+
+length(empties)
 length(non_empties) # [1] 2529
 
 ## get names
@@ -83,6 +89,7 @@ all_apis_versions |> unnest_wider(versions)
 all_apis_versions |> unnest_longer(col = versions)
 aapw <- all_apis_versions |> unnest_longer(col = versions)
 
+## move to 013_
 aapw$versions[[1]]
 
 
@@ -94,6 +101,8 @@ z <- all_apis |>
   dplyr::filter(preferred == version) |>
   dplyr::select(api_name, version, versions)
 
+## Jon uses this name.
+all_apis_versions <- z
 
 lengths(z$versions) |> unique()
 # [1] 7 8
