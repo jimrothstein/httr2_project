@@ -1,0 +1,219 @@
+---
+title:  Deeply Nested Lists 
+author: jim
+format: revealjs
+editor_options: 
+  chunk_output_type: console
+---
+
+
+##  Deeply Nested Lists often arise from JSON/apis
+
+Intro video:  Jon Harmon - r4ds Web APIs  (writing a book)
+
+skip to about 18' (JSON begins)
+
+<https://www.youtube.com/watch?v=s_ajKXtGey0>
+
+## Example, football season
+
+<http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?&dates=2018&seasontype=2&week=1>
+
+```{r}
+#| echo: true
+library(tidyr)
+library(dplyr)
+library(rlang)
+library(tibble)
+
+url <- "http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?&dates=2018&seasontype=2&week=1"
+
+football <- jsonlite::fromJSON(url)
+
+#View(football)
+```
+
+##    Rectangle is one approach
+
+```{r}
+#| echo: true
+z <- enframe(football)
+is.tibble(z) # [1] TRUE
+z
+
+```
+
+##  Now it is a tibble with list-columns.   To be useful these will need to be unraveled.
+
+## (New topic) Tidyverse packages:  rlang, dplyr   have tools.    Difference between `tool` and `strategy` ?
+
+## Review:  Closer look at data.frames:  columns (variables) and rows (observations).   Simple, right?
+
+Before R,  I used databases and first step was almost always something like this:
+R calls them columns (or variables)   * = index 
+```
+* last name
+* first name
+* middle name
+age
+dob
+income
+spouse
+```
+
+
+##  (Back to unnesting) As strategy, in general, Not this clear what is wider (variables) or longer (observations){.smaller }
+
+**Guidelines, rules of thumb, "heurtics"  **
+
+https://github.com/tidyverse/tidyr/blob/c6c126a61f67a10b5ab9ce6bb1d9dbbb7a380bbd/R/unnest-auto.R
+
+Automatically call `unnest_wider()` or `unnest_longer()`
+```
+#'
+#' @description
+#' `unnest_auto()` picks between `unnest_wider()` or `unnest_longer()`
+#' by inspecting the inner names of the list-col:
+#'
+#' * If all elements are unnamed, it uses
+#'   `unnest_longer(indices_include = FALSE)`.
+#' * If all elements are named, and there's at least one name in
+#'   common across all components, it uses `unnest_wider()`.
+#' * Otherwise, it falls back to `unnest_longer(indices_include = TRUE)`.
+#'
+#' It's handy for very rapid interactive exploration but I don't recommend
+#' using it in scripts, because it will succeed even if the underlying data
+#' radically changes.
+#'
+#' @inheritParams unnest_longer
+#' @export
+#' @param col <[`tidy-select`][tidyr_tidy_select]> List-column to unnest.
+#' @keywords internal
+
+```
+
+##   TODO:  Demonstrate:   named (variables) vs unnamed (observations) and Tools
+```{r}
+# Zero in on names
+
+L=list(
+  list(state = "OR", capital="Salem"),
+  list(state = "NJ", capital = "Trenton"),
+  list(state = "NY", capital = "Albany"),
+  list(state = "TX", capital = "Austin")
+)
+L
+
+dput(L) 
+
+# enframe guess , or give it names
+# t = tibble::enframe(L, name = "state", value="capital")
+t1 = tibble::enframe(L)
+identical(t, t1)
+t1
+
+
+## Examine
+t1$value[[1]]
+t1$value[[2]]
+
+## Encouraging !
+sapply(t1$value, rlang::is_named)
+
+## Conclude
+tidyr::unnest_wider(t1, value)
+```
+##  Mixed:  Hoist 
+```{r}
+
+
+M=list(
+        list(state="OR", 
+             list("Eugene", "Portland", "Hilsboro")),
+
+        list(state="NY", list("NYC", "Buffalo", "Corning", "Rye")),
+
+        list(state="NJ", list("Newark"))
+             )
+
+M
+t2 = enframe(M)
+t2
+
+# mix !
+t2$value[[1]]
+
+
+# pull out state
+t3  <- tidyr::hoist(t2, value, "state")
+t3
+
+## guess objservations
+t3$value[[1]]
+
+## note
+base::unlist(t3$value, recursive= F)
+## two levels ! 
+t3 |> unnest_longer(value) |> unnest_longer(value)
+
+```
+
+## Skip
+S = structure(
+list(
+        list(state="OR", 
+             list("Eugene", "Portland", "Hilsboro")),
+
+        list(state="NY", list("NYC", "Buffalo", "Corning", "Rye")),
+
+        list(state="NJ", list("Newark"))
+
+             )
+)
+S = structure(dput(M))
+# 
+dput(M)
+
+
+
+##  more on lists 
+
+L= list(1,2)
+```{r}
+L= list(1,2)
+attributes(L)
+
+```
+
+M = list(a=1,b=2)
+```{r}
+
+M = list(a=1,b=2)
+attributes(M)
+
+N = list(1,2,list(3))
+O  <- list(1,2,z=list(3))
+P  <- list(1,2, list(z=3))
+
+f  <- function(x=NULL) attributes(x)
+f(L)
+f(M)
+f(N)
+f(O)
+f(P)
+
+# weird
+identical(N,P)
+identical(attributes(N), attributes(P))
+```
+
+##  lower level tools use this meta data
+- vctrs::
+- tidyselect::
+
+##  Futher Information
+Tan Ho:  <https://www.youtube.com/watch?v=fpw4G2-0R-o>
+
+Jon Harmon: <https://www.youtube.com/watch?v=s_ajKXtGey0>
+
+R-Bloggers: <https://www.r-bloggers.com/2018/10/converting-nested-json-to-a-tidy-data-frame-with-r/>

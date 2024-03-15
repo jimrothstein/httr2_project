@@ -1,8 +1,13 @@
-# 810_from_JSON.R
+# 810_EXAMPLE_football_fromJSON.R
+
+# TODO: (2024-03-15)
+# - Pursue unnesting, using modern rlang, vctrs as guides
+# - Possible this may be harder than average
+# - Use revealjs - ONCE my code is stable.
 
 library(tidyr)
-library(testthat)
 library(jsonlite)
+library(stringr)
 
 # TAGS:  tidyr, separate,
 
@@ -13,70 +18,71 @@ library(jsonlite)
 # REF: R-bloogers, another approach to deeply nested
 # https://www.r-bloggers.com/2018/10/converting-nested-json-to-a-tidy-data-frame-with-r/
 
+## Get data
 url <- "http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?&dates=2018&seasontype=2&week=1"
 football <- jsonlite::fromJSON(url)
 
+## rectangle
+data_raw <- tibble::enframe(unlist(football))
+head(data_raw)
 
-# rectangle
-z <- enframe(football)
-z1 <- enframe(unlist(football))
+##  How many columns are wrapped into name? (7)
 
-## all levels/names ?
-z2 <- unlist(football)
-names(z2)
-head(z2)
-
-head(z)
-head(z1)
-
-# --------
-# LEGACY
-# --------
-
-##  T if every elment is named
-rlang::is_named(z$value) # [1] FALSE
-elements <- sapply(z$value, is_named)
-head(elements)
-length(elements)
-
-str(elements, max.depth = 2)
-sapply(elements, is_named)
-elements[sapply(elements, is_named) != T]
-length(elements)
-
-names(z$value[[1]])
-length(names(z$value[[1]]))
-
-##  Grab non-empty (actually none are empty)
-non_empties <- z$value[lengths(z$value) > 0]
-length(non_empties) # [1] 2529
-
-## get names
-head(non_empties)
-element_names <- purrr::map(non_empties, names)
-element_names1 <- lapply(non_empties, names)
-identical(element_names, element_names1)
-
-## any names NULL?  no, all are named
-has_null <- unique(purrr::map_lgl(element_names, is.null))
-has_null
-map(element_names, is.null) |> is.null()
+# guess
+data_raw %>% separate(name, into = c(paste0("x", 1:10)), fill = "right")
 
 
-purrr::reduce(element_names, intersect) # added, preferred, versions
+pull(data_raw, name) |>
+  stringr::str_split(rgx_split) |>
+  purrr::map_dbl(~ length(.)) |>
+  max()
 
-# All rows and all elements of z$value are NAMED => unnest_wider
-unnest_wider(z, col = value)
+## breakout of code above
+
+nrow(data_raw)
+pull(data_raw, name)
+pull(data_raw, name) |> stringr::str_split(rgx_split)
+pull(data_raw, name) |>
+  stringr::str_split(rgx_split) |>
+  purrr::map_dbl(~ length(.))
+
+##
+rgx_split <- "\\."
+n_cols_max <-
+  data_raw %>%
+  pull(name) %>%
+  stringr::str_split(rgx_split) %>%
+  map_dbl(~ length(.)) %>%
+  max()
+n_cols_max
+
+## split names (correct way)
+nms_sep <- paste0("name", 1:n_cols_max)
+data_sep <-
+  data_raw %>%
+  separate(name, into = nms_sep, sep = rgx_split, fill = "right")
+data_sep
 
 
-all_apisgg
+# ----------------------
+##  post-process  STOP
+# ----------------------
+
+## Redo smarter way?  4 rows
+x <- enframe(football)
+x
+
+##  examine rows
+x$value[[1]]
+x$value[[2]]
+x$value[[3]]
 
 
+## Unnest row 1   all names, suggest WIDER
+names(x$value[[1]])
+attributes(x$value[[1]])
+rlang::is_named(x$value[[1]])
 
 
-all_apis_df <- enframe(all_apis)
-all_apis_df
-all_apis_versions <- all_apis_df |> tidyr::unnest_wider(value)
-all_apis_versions
-
-##  only versions is list, but not all equal
+# x[1,]   |> unnest_wider(value )
+x[1, ] |> unnest_longer(value)
