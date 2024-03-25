@@ -1,3 +1,15 @@
+# 003_examine_column_from_tibble.R
+
+
+# --------------------------------------------------------------
+#           SUBSET v EXTRACT (tibble)
+#     tibbles:   SUBSET tibble vs EXTRACT
+#     ocompare df$col df[["col"]],  tidyr::hoist
+#
+# SUBSET:  (ie columns)   t[, 2] , t[, "b"] (all same)   =>  Tibble
+# EXTACT t$b, t[["b"]], (all same)   return vector
+# --------------------------------------------------------------
+
 ## Subset tibble vs extract column contents
 t <- tibble(
   a = c(1, 2),
@@ -6,19 +18,20 @@ t <- tibble(
 is_tibble(t) # [1] TRUE
 
 
-# compare t$b, t[, 2] , t[, "b"]  - SAME
-# compare  t[["b"]], t[, 2], t[, "b"] - NOT
 
-# subset a tibble returns tibble
+# ---------------------------------
+##  subset,   t[,] returns tibble
+# ---------------------------------
 identical(t[, 2], t[, "b"]) # [1] TRUE
 
-# BUT ...
-identical(t$b, t[, 2]) # [1] FALSE
+# -----------------
+# BUT ... EXTRACT
+# -----------------
+identical(t$b, t[["b"]]) # [1] TRUE
 typeof(t$b) # [1] "double"
 
-# extact content so column is vector
-identical(t[["b"]], t[, 2]) # [1] FALSE
-identical(t$b, t[["b"]]) # [1] TRUE
-
+# ----------------------------------------
+##  EXRACT may reduce to atomic, non-list
+# ----------------------------------------
 is.list(t[["b"]]) # [1] FALSE
 typeof(t[["b"]]) # [1] "double"
