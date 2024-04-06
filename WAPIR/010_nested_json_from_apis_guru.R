@@ -1,18 +1,20 @@
 # 010_nested_json_from_apis_guru.R
 
-# Purpose:   Retrieve all apis listed in  apis.guru (many)
+# ----------------------------------------------------------
+# Purpose:   Retrieve all apis listed in  apis.guru (many), in JSON format
+# ----------------------------------------------------------
 # TODO:
 #   - import only if RDS file not found
 ##  2024-02-29
 library(jsonlite)
 
-if ( !file.exists("all_apis.RDS")) {
-# jsonLite can accept url: https://apis.guru/api-doc/#operation/listAPIs
-all_apis <- jsonlite::fromJSON("https://api.apis.guru/v2/list.json")
-saveRDS(file = "all_apis.RDS", object = all_apis)
+if (!file.exists("all_apis.RDS")) {
+  # jsonLite can accept url: https://apis.guru/api-doc/#operation/listAPIs
+  all_apis <- jsonlite::fromJSON("https://api.apis.guru/v2/list.json")
+  saveRDS(file = "all_apis.RDS", object = all_apis)
 }
 
-all_apis<- readRDS(file = "all_apis.RDS")
+all_apis <- readRDS(file = "all_apis.RDS")
 
 testthat::expect_true(
   identical(x, all_apis)

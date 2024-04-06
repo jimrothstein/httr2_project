@@ -4,16 +4,22 @@
 apisguru_spec <- yaml::read_yaml("https://api.apis.guru/v2/specs/apis.guru/2.2.0/openapi.yaml")
 str(apisguru_spec, max.level=2)
 
+# ----------------------------------------
+# Example:  tifflify youtube's api specs
+# ----------------------------------------
 youtube_spec <- yaml::read_yaml("https://api.apis.guru/v2/specs/googleapis.com/youtube/v3/openapi.yaml")
 
 str(youtube_spec, max.level=2)
 str(youtube_spec, max.level=1)
 
 ## https://r4ds.github.io/bookclub-wapir/slides/httr2/openapi.html#/introduction-to-tibblify
-Introduction to tibblify
+# ------------------------
+# Introduction to tibblify
+# ------------------------
 
 TODO: Use tibblify to get response specs, and then use that to tibblify responses. Show without the spec (messy) and then in theory it SHOULD get the ~same result as previous slides with spec.
 
+# check structure
 youtube_paths <- tibblify::tibblify(youtube_spec$paths) |> 
   dplyr::glimpse()
 
