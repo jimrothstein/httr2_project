@@ -10,7 +10,7 @@ library(jsonlite)
 library(tibblify)
 
 # -----------------
-##  tibblify GURU, but we use subset ...
+##  tibblify GURU
 # -----------------
 all_apis<- readRDS(file = "all_apis.RDS")
 enframe(all_apis)
