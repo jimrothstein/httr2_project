@@ -19,7 +19,9 @@ all_apis <- readRDS(file = "all_apis.RDS")
 
 
 # read_yaml requires (1) stored in a file (2) be in yaml/json format
-yaml::read_yaml(file = "all_apis_yaml.yaml")
+z <- yaml::read_yaml(file = "~/code/httr2_project/WAPIR/all_apis_yaml.yaml")
+## THIS is where fun starts
+tibblify(z)
 
 ## write as yaml
 yaml::write_yaml(x = readRDS(file = "all_apis.RDS"), file = "all_apis_yaml.yaml")
