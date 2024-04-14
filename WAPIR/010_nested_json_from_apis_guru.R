@@ -11,6 +11,9 @@ library(jsonlite)
 if (!file.exists("all_apis.RDS")) {
   # jsonLite can accept url: https://apis.guru/api-doc/#operation/listAPIs
   all_apis <- jsonlite::fromJSON("https://api.apis.guru/v2/list.json")
+  # write_json works and can then be in browser
+  jsonlite::write_json(all_apis, path = "all_guru_apis_json.json")
+
   saveRDS(file = "all_apis.RDS", object = all_apis)
 }
 
