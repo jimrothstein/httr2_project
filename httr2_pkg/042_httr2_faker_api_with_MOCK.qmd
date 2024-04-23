@@ -1,0 +1,58 @@
+042_httr2_faker_api_with_MOCK.qmd
+
+PURPOSE:  Use faker api (sameas used in  httr2 vignette) to test MOCK servers.
+
+```{r}
+
+
+library(httr2)
+library(httptest2)
+
+#remotes::install_github("nealrichardson/httptest2")
+
+faker_person <- function(gender = NULL, 
+                         birthday_start = NULL, 
+                         birthday_end = NULL, 
+                         quantity = 1, locale = "en_US", 
+                         seed = NULL) {
+  faker(
+    "persons",
+    gender = gender,
+    birthday_start = birthday_start,
+    birthday_end = birthday_end,
+    quantity = quantity,
+    locale = locale,
+    seed = seed
+  )
+}
+
+## returns req
+faker <- function(resource, ..., quantity = 1, locale = "en_US", seed = NULL) {
+  params <- list(
+    ...,
+    quantity = quantity,
+    locale = locale,
+    seed = seed
+  )
+  names(params) <- paste0("_", names(params))
+
+  req  <- request("https://fakerapi.it/api/v1") %>%
+    req_url_path_append(resource) %>%
+    req_url_query(!!!params) %>%
+    req_user_agent("my_package_name (http://my.package.web.site)") 
+  req
+
+}
+
+
+
+req  <- faker_person("female", quantity=2)
+req
+
+req |>
+    req_perform() %>%
+    resp_body_json()
+length(resp)
+names(resp)
+
+```
