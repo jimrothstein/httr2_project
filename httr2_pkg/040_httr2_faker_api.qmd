@@ -23,9 +23,9 @@ fontsize: 10pt
 geometry: margin=0.4in,top=0.25in   
 TAGS:  httr2,
 ---
-
-
 Copied from vignette
+PUROSE:  Simple request/reponse using httr2
+
 https://httr2.r-lib.org/articles/httr2.html
 
 REF:    https://fakerapi.it/en
@@ -67,7 +67,7 @@ Example: resource is `images` and parameter is `width=380`
 https://fakerapi.it/api/v1/images?_width=380
 
 ```
-Put in browser (cut & paste)
+Put in browser (cut & paste) Json returned
 ```
 https://fakerapi.it/api/v1/images?_width=380&_quantity=2
 
@@ -105,34 +105,35 @@ http://fakerapi.it/api/v1/images?_width=380&_quantity=1
 ```
 #### response
 ```{r resp}
-resp  <- req |> req_perform()
+resp <- req |> req_perform()
 resp
 
-resp  |> resp_body_json()
+## converts JSON to R lists
+resp |> resp_body_json()
 
 # compare to browser results
 resp |> resp_headers()
 ```
 
 
-
-
 ```{r exit}
-knitr::knit_exit()
+#knitr::knit_exit()
 ```
 
 #### request to base
 ```{r begin}
 req <- request("https://fakerapi.it/api/v1")
-resp <- req %>% 
+resp <- req %>%
   # Then we add on the images path
-  req_url_path_append("images") %>% 
+  req_url_path_append("images") %>%
   # Add query parameters _width and _quantity
-  req_url_query(`_width` = 380, `_quantity` = 1) %>% 
+  req_url_query(`_width` = 380, `_quantity` = 1) %>%
   req_perform()
 
 # The result comes back as JSON
-resp %>% resp_body_json() %>% str()
+resp %>%
+  resp_body_json() %>%
+  str()
 #> List of 4
 #>  $ status: chr "OK"
 #>  $ code  : int 200
@@ -145,12 +146,5 @@ resp %>% resp_body_json() %>% str()
 ```
 
 
-```{r render, eval=F, include=F}
 
-file <- "/home/jim/code/youtube_api/httr2_pkg/040_httr2_faker_api.Rmd"
-
-rmarkdown::render(file,
-       output_format= "pdf_document",
-       output_dir = "~/Downloads/print_and_delete")
-```
 
