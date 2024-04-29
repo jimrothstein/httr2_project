@@ -21,40 +21,45 @@
         ##  Retrieve from ~/.Renviron
         API_KEY <- Sys.getenv("API_KEY")
         client_id <- Sys.getenv("OAUTH2_ID")
-        client_secret <- Sys.getenv("OAUTH2_SECRET")
+        client_id <- Sys.getenv("YOUTUBE_CLIENT_ID")
+        client_id
+        client_secret <- Sys.getenv("YOUTUBE_CLIENT_SECRET")
+
 
         ##  Google wants muliple scopes separated by white space.
         scope <- paste0(
                 "https://www.googleapis.com/auth/youtube.force-ssl ",
                 "https://www.googleapis.com/auth/youtube"
         )
+        # try this (single) scope
+        scope <- "https://www.googleapis.com/auth/youtube.force-ssl "
 }
 
 ## 	Construct client
-{
-        client <- oauth_client(
-                id = client_id,
-                token_url = token_url,
-                secret = client_secret,
-                key = API_KEY,
-                auth = "body",
-                # auth = "header",
-                name = "youtube_ALL_PLAYLISTS"
-        )
-}
+
+client <- oauth_client(
+        id = client_id,
+        token_url = token_url,
+        secret = client_secret,
+        key = API_KEY,
+        auth = "body",
+        # auth = "header",
+        name = "youtube_ALL_PLAYLISTS"
+)
+
 
 ## 	Assemble for  httr2::req_oauth_auth_code()
 ##
-{
-        auth_params <- list(scope = scope, response_type = "code")
-        fields <- paste(
-                sep = ",", "nextPageToken",
-                "items(snippet(title,description,publishedAt))"
-        )
-        token_params <- list(scope = scope, grant_type = "authorization_code")
-        maxResults <- 10
-        nextPageToken <- -1
-}
+
+auth_params <- list(scope = scope, response_type = "code")
+fields <- paste(
+        sep = ",", "nextPageToken",
+        "items(snippet(title,description,publishedAt))"
+)
+token_params <- list(scope = scope, grant_type = "authorization_code")
+maxResults <- 10
+nextPageToken <- -1
+
 
 
 
@@ -63,6 +68,7 @@
 # ================================================================
 #### 	Workaround, to get token: user must appove in browser
 ####  Browser - opens
+##  STOP -- invalid request
 {
         token <- oauth_flow_auth_code(client,
                 auth_url = auth_url,
@@ -76,6 +82,7 @@
 
         ## 	read the token
         token <- readRDS(file = "token.rds")
+        token
 }
 
 
