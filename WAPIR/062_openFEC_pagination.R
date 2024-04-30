@@ -98,5 +98,11 @@ candidates_multi <-
     max_reqs = Inf
   )
 length(candidates_multi)
-
+head(candidates_multi)
+names(candidates_multi)
+resp =  candidates_multi
+resp[[1]]
 resp_body_json(candidates_multi[[2]])
+
+candidates_multi
+res = resp_body_json(canddidates_multi$results)
