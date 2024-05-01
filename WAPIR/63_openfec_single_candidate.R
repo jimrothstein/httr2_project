@@ -1,18 +1,28 @@
-From Jon's slides
+# From Jon's slides
 
-# PURPOSE:   openFEC, with iterate to return all api info for request
+# PURPOSE:   openFEC, ONE candidate 
 
 library(httr2)
 library(constructive)
+x <- 3
 # -------------
 #basic request
 # -------------
 
+## Ohio, Senate, 2024 R=Moreno
+candidates_request <-
+  request("https://api.open.fec.gov/v1/candidates") |> 
+  req_url_query(api_key = "DEMO_KEY", election_year = 2024, office = "S", state="OH") 
+candidates_request
+#  req_url_query(has_raised_funds = TRUE)
+
+if (FALSE) {
 candidates_request <- 
   request("https://api.open.fec.gov/v1/candidates") |> 
   req_url_query(api_key = "DEMO_KEY", election_year = 2020, office = "P") |> 
   req_url_query(has_raised_funds = TRUE)
 candidates_request
+}
 
 # run simple request
 candidates_single <- 

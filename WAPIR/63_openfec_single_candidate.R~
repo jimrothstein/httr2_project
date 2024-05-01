@@ -1,6 +1,6 @@
 From Jon's slides
 
-# PURPOSE:   openFEC, with iterate to return all api info for request
+# PURPOSE:   openFEC, ONE candidate 
 
 library(httr2)
 library(constructive)
