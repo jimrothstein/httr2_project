@@ -1,24 +1,28 @@
-From Jon's slides
+# From Jon's slides
 
-# PURPOSE:   openFEC, with iterate to return all api info for request
+# PURPOSE:   openFEC, ONE candidate  OHIO, Republican
 
 library(httr2)
 library(constructive)
-# -------------
-#basic request
-# -------------
+x <- 3
+                                        #
+candidate_id  <- "S6OR00110"  # Wyden
+candidate_id <-  "S4OH00226" # Bernie Moreno, R, Ohio
+api_key  <- Sys.getenv("API")   # fec api
 
-candidates_request <- 
+candidates_request <-
   request("https://api.open.fec.gov/v1/candidates") |> 
-  req_url_query(api_key = "DEMO_KEY", election_year = 2020, office = "P") |> 
-  req_url_query(has_raised_funds = TRUE)
+  req_url_query(api_key=api_key, election_year=2024, office="S", candidate_id = candidate_id)
 candidates_request
+
 
 # run simple request
 candidates_single <- 
   candidates_request |> 
   req_perform() |> 
   resp_body_json()
+
+candidates_single
 
 # -------
 # probe response
@@ -34,8 +38,9 @@ candidates_single$pagination$count #> [1] 173
 
 
 # ------------------------------------
-# A - httr2-pagination-fec-multi
+# httr2-pagination-fec-multi
 # each request, returns one page
+
 # ------------------------------------
 candidates_multi <- 
   candidates_request |> 
@@ -55,7 +60,7 @@ candidates_multi <-
 length(candidates_multi)
 #> [1] 9
 # ---------------
-## B  - SAVE to file
+## SAVE to file
 # ---------------
 candidates_multi <- 
   candidates_request |> 
@@ -78,7 +83,7 @@ saveRDS(
 z=readRDS("candidates_multi.rds")
 
 # ----------------------------------
-#  C = run again, 
+#  run again, 
 ## replace call back with function
 # ----------------------------------
 
@@ -101,24 +106,13 @@ candidates_multi <-
 #  probe response
 #
 
-resp = candidates_multi
-is.list(resp)
-
-# 9 pages
-length(resp) #9
-
-# 1st page, contains body, actually list of 7
-resp[[1]]
-names(resp[[1]]
-length(resp[[1]])
-
-library(tibblify)
-tibblify(resp_body_json(resp))  # error, sees list
-
-tibblify(resp_body_json(resp[[1]]))   # WOrkS
-tibblify(resp_body_json(resp[[1]]$body)) # error
-
 construct(candidates_multi) |> head(1) # error
+length(candidates_multi) #9
+head(candidates_multi)
+resp =  candidates_multi
+is.list(resp)
+construct(resp[[1]]) # error
+
 
 
 
@@ -128,3 +122,23 @@ resp_body_json(candidates_multi[[2]]))
 
 candidates_multi
 res = resp_body_json(canddidates_multi$results)
+
+# OHIO
+
+  'https://api.open.fec.gov/v1/candidate/S4OH00226/totals/?page=1&per_page=20&election_full=true&sort=-cycle&sort_hide_null=false&sort_null_only=false&sort_nulls_last=false&api_key=DEMO_KEY' \
+
+candidate_id  <- "SOH00226"
+
+candidates_request <-
+  request(paste0("https://api.open.fec.gov/v1/candidate/", candidate_id, "/totals")) |> 
+  req_url_query(api_key=api_key, election_full=TRUE)
+candidates_request
+
+candidates_single <- 
+  candidates_request |> 
+  req_perform() |> 
+  resp_body_json()
+
+candidates_single
+library(tibblify)
+tibblify(candidates_single)
