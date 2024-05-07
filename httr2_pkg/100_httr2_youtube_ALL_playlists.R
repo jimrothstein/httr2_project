@@ -1,7 +1,8 @@
 # ==============
 # 		PURPOSE:
 # Use httr2::, oauth2 to list ALL PLAYLISTS for user
-# STATUS:   WORKING                                    ba
+# req_oauth_auth_code                                 
+# STATUS:   WORKING, upto 50                                    
 # ==============
 # GET https://youtube.googleapis.com/youtube/v3/playlists?part=snippet&mine=true&fields=items(snippet(title))&key=[YOUR_API_KEY] HTTP/1.1
  				
@@ -12,8 +13,8 @@
   API_KEY <- Sys.getenv("API_KEY")
   client_id <- Sys.getenv("YOUTUBE_CLIENT_ID")
   client_secret <- Sys.getenv("YOUTUBE_CLIENT_SECRET")
-
-scope  <-  "https://www.googleapis.com/auth/youtube.readonly"
+  scope  <-  "https://www.googleapis.com/auth/youtube.readonly"
+  maxResults  <-  500
 
 ## More preliminaries
 
@@ -23,15 +24,6 @@ scope  <-  "https://www.googleapis.com/auth/youtube.readonly"
     token_url = token_url,
     secret = client_secret,
 )
-
-## 	Begin assembly for  httr2::req_oauth_auth_code()
-## 		But do not run, yet
-
-  #  auth_params <- list(scope = scope, response_type = "code")
-  #auth_params <- list(scope = scope)
-  #token_params <- list(scope = scope, grant_type = "authorization_code")
-
-
 fields <- paste(sep = ",", "nextPageToken", "items(snippet(title,description,publishedAt))")
  
 
@@ -41,52 +33,72 @@ req <- request(request_url)
 
   req <- req |>
     req_error(is_error = ~FALSE) |> # do not turn errors into R:
-    req_url_query(part = "snippet", mine = "true", fields = fields)
+    req_url_query(part = "snippet", mine = "true", fields = fields, maxResults=maxResults)
 
-
+req
 
   ## 	X is final request object
-    # authenticate first
- X <- httr2::req_oauth_auth_code(req,
+req <- httr2::req_oauth_auth_code(req,
     client = client,
     auth_url = auth_url,
     cache_disk = T,
     scope = scope,
-    pkce = T,
-    #auth_params = auth_params,
-#    token_params = token_params
-  )
+    pkce = T)
 
 
 ## 	Final check, proceed to perform.   After user authorizes, run the request.
-{
-  resp <- X %>% req_perform()
-}
 
-resp |> httr2::resp_body_json()
-## 					E R R O R ....
+  resp <- req %>% req_perform()
 
 
-##i LEGACY
-# #### Continue (json, tibble, youtube pagination) for results: (not shown)
-# resp_status(resp)
-# resp_status_desc(resp)
-# sapply(list(resp_status,
-# 						resp_status_desc,
-# 						resp_content_type), function(f) f(resp))
-#
-# resp_headers(resp)
-#
-# #resp_body_raw(resp)
-# #resp_body_string(resp)
-# #	convert to R object
-# r  <- resp_body_json(resp)
-# #resp_body_html(resp)
-# resp_link_url(resp)
-# ####	Extract JSON
-#
-# Use jsonLite tools
-# library(jsonlite)
-# library(data.table)
-# r$items
-#
+(ans  <- resp |> httr2::resp_body_json())
+resp_status(resp)
+resp_headers(resp)
+ans$nextPageToken
+
+## Pagination
+# If all the abvoe is working,  then ....
+
+
+next_req <- function(resp, req) {
+    browser()
+  body <- resp_body_json(resp)
+  nextPageToken <- body$nextPageToken
+  if (is.null(nextPageToken))
+    return(NULL)
+  req |> req_body_json_modify(nextPageToken= nextPageToken)
+  }
+resp
+req
+
+next_req(resp,req)
+
+ha
+ttr2::iterate_with_cursor(
+                      param_name = "nextPageToken",
+                      resp_param_value = \(resp) {
+                          content  <- resp_body_json(resp)
+                          if (is.null(content$nextPageToken)){
+                              return(NULL)
+                              } else {
+                          return(content$nextPageToken)
+                          }
+                          }
+)
+req |> httr2::req_perform_iterative(
+                  next_req  = next_req,
+         max_reqs=10,
+         progress=T
+)
+
+req |> req_perform_iterative(
+    next_req = iterate_with_cursor(
+      "cursor",
+      resp_param_value = \(resp) {
+        content <- resp_body_json(resp)
+        if (!length(content$nextPageToken)) return(NULL)
+        content$nextPageToken
+      }
+    ),
+    max_reqs = Inf
+  )
