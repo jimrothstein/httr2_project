@@ -14,7 +14,7 @@
   client_id <- Sys.getenv("YOUTUBE_CLIENT_ID")
   client_secret <- Sys.getenv("YOUTUBE_CLIENT_SECRET")
   scope  <-  "https://www.googleapis.com/auth/youtube.readonly"
-  maxResults  <-  500
+  maxResults  <-  40
 
 ## More preliminaries
 
@@ -24,20 +24,20 @@
     token_url = token_url,
     secret = client_secret,
 )
-fields <- paste(sep = ",", "nextPageToken", "items(snippet(title,description,publishedAt))")
+fields <- paste(sep = ",", "items(snippet(title,description,publishedAt))")
  
 
   ## 	Build request object, let httr2:: do it's magic (including server setup) to return resp object.
 
 req <- request(request_url)
 
-  req <- req |>
+req <- req |> 
     req_error(is_error = ~FALSE) |> # do not turn errors into R:
     req_url_query(part = "snippet", mine = "true", fields = fields, maxResults=maxResults)
 
 req
 
-  ## 	X is final request object
+  ## 	req is final request object
 req <- httr2::req_oauth_auth_code(req,
     client = client,
     auth_url = auth_url,
@@ -47,11 +47,14 @@ req <- httr2::req_oauth_auth_code(req,
 
 
 ## 	Final check, proceed to perform.   After user authorizes, run the request.
+req  <- req |> req_url_query(pageToken="")
+req
 
-  resp <- req %>% req_perform()
+resp <- req %>% req_url_query(pageToken="") |> req_perform()
 
 
 (ans  <- resp |> httr2::resp_body_json())
+
 resp_status(resp)
 resp_headers(resp)
 ans$nextPageToken
@@ -60,21 +63,33 @@ ans$nextPageToken
 # If all the abvoe is working,  then ....
 
 
+# manually, prepare next_req
+# if next_req returns NULL, req_perform_iterations knows to stop
+# othewise, req_perform_iterations returns a LIST of responses.
+
 next_req <- function(resp, req) {
-    browser()
   body <- resp_body_json(resp)
   nextPageToken <- body$nextPageToken
   if (is.null(nextPageToken))
     return(NULL)
-  req |> req_body_json_modify(nextPageToken= nextPageToken)
-  }
+  #req |> req_body_json_modify(nextPageToken= nextPageToken)
+  req |> req_url_query(pageToken= nextPageToken)
+}
+
 resp
 req
 
 next_req(resp,req)
 
-ha
-ttr2::iterate_with_cursor(
+# all at once
+L  <- _req |> req_perform_iterative(
+    next_req = next_req,
+    max_reqs=10,
+    progress = T
+    )
+
+
+httr2::iterate_with_cursor(
                       param_name = "nextPageToken",
                       resp_param_value = \(resp) {
                           content  <- resp_body_json(resp)
@@ -91,14 +106,3 @@ req |> httr2::req_perform_iterative(
          progress=T
 )
 
-req |> req_perform_iterative(
-    next_req = iterate_with_cursor(
-      "cursor",
-      resp_param_value = \(resp) {
-        content <- resp_body_json(resp)
-        if (!length(content$nextPageToken)) return(NULL)
-        content$nextPageToken
-      }
-    ),
-    max_reqs = Inf
-  )
