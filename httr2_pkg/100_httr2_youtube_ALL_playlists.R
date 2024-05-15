@@ -23,7 +23,7 @@
   client <- oauth_client(
     id = client_id,
     token_url = token_url,
-    secret = client_secret,
+    secret = client_secret
 )
 # Need nextPageToken here
 fields <- paste(sep = ",", "nextPageToken,items(snippet(title,description,publishedAt))")
@@ -34,24 +34,29 @@ fields <- paste(sep = ",", "nextPageToken,items(snippet(title,description,publis
 req <- request(request_url) |>
     req_user_agent("package:  wapir, httr2, mailto: jimrothstein@gmail.com") |>
     req_error(is_error = ~FALSE) |> # do not turn errors into R:
-req_url_query(part = "snippet", mine = "true", fields = fields, maxResults=maxResults) |>
-httr2::req_oauth_auth_code(req,
-    client = client,
-    auth_url = auth_url,
-    cache_disk = T,
-    scope = scope,
-    pkce = T)
+    req_url_query(part = "snippet", mine = "true", fields = fields, maxResults=maxResults) |>
+    httr2::req_oauth_auth_code(
+      client = client,
+      auth_url = auth_url,
+      cache_disk = T,
+      scope = scope,
+      pkce = T)
 
+utils::URLdecode(req$url)
+names(req)
+
+req$headers
+req$policies
 
 resp <- req %>% req_perform()
 
-resp
 
 (ans  <- resp |> httr2::resp_body_json())
 names(ans)
 resp_status(resp)
 resp_headers(resp)
 ans$nextPageToken
+resp_headers(resp)
 
 ## Pagination
 # If all the abvoe is working,  then ....
@@ -66,8 +71,7 @@ next_req <- function(resp, req) {
   nextPageToken <- body$nextPageToken
   if (is.null(nextPageToken))
     return(NULL)
-  #req |> req_body_json_modify(nextPageToken= nextPageToken)
-  req |> req_url_query(pageToken= nextPageToken)
+  req |> req_url_query(pageToken = nextPageToken)
 }
 
 resp
@@ -92,8 +96,6 @@ length(X[[1]])
 X[[1]]
 
 X[[2]]
-
-
 
 
 # ITERATE
