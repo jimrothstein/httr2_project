@@ -1,0 +1,60 @@
+---
+title: "Deeply Nested Lists - Background"
+format: revealjs
+embed-resources: true
+---
+
+
+
+## Final objective ( Jon Harmon's future book chapter):  unnest deeply nested lists (such as from apis/JSON)
+
+- See video: (https://youtu.be/WGxr4BTP75w) 
+
+Note:
+
+@2:18 JSON from api
+
+@8:13 rectangle
+
+@10:50 heurtic
+
+@11:23 unnest_auto diagram
+
+
+## Specific Goal for this *background*  piece:   Ability to probe and work with related meta data .  Understand useful META data. (for unnesting)
+
+A few popular tools: (too high level, IMHO)
+
+- tidyr::    examples (https://tidyr.tidyverse.org/articles/rectangle.html)
+
+- dplyr
+
+- purrr
+
+
+But I think  understanding this at LOWER level, with simple examples, would be very useful preliminary before the tidyverse.
+
+- base  names, attributes,   WHAT is META data;  NOT META data?
+- vctrs:: ptype
+- tibblify::   (https://mgirlich.github.io/tibblify/)
+
+- What is META data so useful to unraveling deeply nested lists?
+
+## Do not want to interfere with Jon's work (book, **copyrights** or improve tools)
+
+However, a *cheat* sheet for working with meta data might be nice.
+With *examples* and *counter-examples*
+
+Immediate Goal:   User has better appreciate for meta data, `gottchas`, variety of tools.    Goal (here) is NOT to repeat what Jon is doing.
+
+
+Example:  Are attributes of lists L, M the same?
+
+```{r}
+#| echo: true
+L = list(1,2,list(z=3))
+M = list(1,2,z=list(3))
+attributes(L)
+attributes(M)
+```
+
